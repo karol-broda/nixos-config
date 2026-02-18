@@ -1,0 +1,8 @@
+module qs.features.panels.dashboard.sections
+
+VolumeSlider 1.0 VolumeSlider.qml
+BrightnessSlider 1.0 BrightnessSlider.qml
+QuickToggles 1.0 QuickToggles.qml
+MediaCard 1.0 MediaCard.qml
+WeatherCard 1.0 WeatherCard.qml
+SystemInfo 1.0 SystemInfo.qml

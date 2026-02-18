@@ -1,0 +1,7 @@
+module qs.core
+
+singleton Actions Actions.qml
+singleton Dispatcher Dispatcher.qml
+EdgeDrawer EdgeDrawer.qml
+Panel Panel.qml
+PanelOutline PanelOutline.qml

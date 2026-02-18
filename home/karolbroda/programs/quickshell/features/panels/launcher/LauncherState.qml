@@ -1,0 +1,60 @@
+import QtQuick
+import qs.services
+
+Item {
+    id: root
+
+    property string query: ""
+    property int selectedIndex: 0
+    property var results: []
+
+    visible: false
+    width: 0
+    height: 0
+
+    function search(text) {
+        query = text
+        selectedIndex = 0
+        Elephant.query(text)
+    }
+
+    function selectNext() {
+        if (selectedIndex < results.length - 1) {
+            selectedIndex++
+        }
+    }
+
+    function selectPrev() {
+        if (selectedIndex > 0) {
+            selectedIndex--
+        }
+    }
+
+    function activateSelected() {
+        if (results.length > 0 && selectedIndex >= 0 && selectedIndex < results.length) {
+            const item = results[selectedIndex]
+            if (item.isWallpaper === true && item.wallpaperPath !== null && item.wallpaperPath !== undefined) {
+                Elephant.activateWallpaper(item.wallpaperPath)
+            } else {
+                Elephant.activate(item)
+            }
+            return true
+        }
+        return false
+    }
+
+    function reset() {
+        query = ""
+        selectedIndex = 0
+        results = []
+    }
+
+    Connections {
+        target: Elephant
+
+        function onResultsReady() {
+            root.results = Elephant.results
+            root.selectedIndex = 0
+        }
+    }
+}

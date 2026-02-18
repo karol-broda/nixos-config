@@ -1,0 +1,93 @@
+* {
+  bg:       #303446FF;
+  bg2:      #292C3CFF;
+  surf0:    #414559FF;
+  surf1:    #51576DFF;
+  text:     #C6D0F5FF;
+  subtext:  #A5ADCEFF;
+  blue:     #8CAAEEFF;
+  mauve:    #CA9EE6FF;
+  red:      #E78284FF;
+
+  font: "JetBrainsMono Nerd Font 11";
+
+  background-color: @bg;
+  text-color: @text;
+}
+
+window {
+  width: 42%;
+  border: 2px;
+  border-color: @mauve;
+  background-color: @bg;
+  border-radius: 10px;
+}
+
+mainbox {
+  padding: 6px;
+  background-color: @bg;
+}
+
+inputbar {
+  padding: 8px 10px;
+  background-color: @surf0;
+  text-color: @blue;
+  border-radius: 8px;
+}
+
+prompt { text-color: @mauve; }
+
+entry {
+  expand: true;
+  placeholder-color: @subtext;
+  text-color: @text;
+  background-color: @surf0;
+}
+
+listview {
+  spacing: 6px;
+  fixed-height: 0;
+  background-color: @bg;
+}
+
+element {
+  padding: 6px 10px;
+  background-color: transparent;
+  text-color: @text;
+  border-radius: 8px;
+}
+
+element selected {
+  background-color: @surf1;
+  border: 1px;
+  border-color: @mauve;
+  text-color: @blue;
+}
+
+element-icon {
+  size: 1.1em;
+  margin: 0 8px 0 0;
+  background-color: transparent;
+}
+element-text {
+  background-color: transparent;
+  text-color: inherit;
+}
+
+element urgent,
+element active {
+  background-color: @red;
+  text-color: @bg2;
+}
+
+message, textbox {
+  background-color: @bg;
+  text-color: @text;
+}
+
+scrollbar {
+  handle-width: 6px;
+  background-color: @bg;
+  handle-color: @surf0;
+}
+

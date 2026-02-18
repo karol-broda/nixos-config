@@ -1,0 +1,7 @@
+module qs.widgets.text
+
+Body 1.0 Body.qml
+Heading 1.0 Heading.qml
+Label 1.0 Label.qml
+Title 1.0 Title.qml
+Mono 1.0 Mono.qml

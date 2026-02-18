@@ -1,0 +1,12 @@
+module qs.features.bar.sections
+
+HomeButton 1.0 HomeButton.qml
+SearchButton 1.0 SearchButton.qml
+PinnedApps 1.0 PinnedApps.qml
+Workspaces 1.0 Workspaces.qml
+DashboardButton 1.0 DashboardButton.qml
+NotifBadge 1.0 NotifBadge.qml
+StatusIcons 1.0 StatusIcons.qml
+Clock 1.0 Clock.qml
+BarVisualizer 1.0 BarVisualizer.qml
+KeyboardLayout 1.0 KeyboardLayout.qml

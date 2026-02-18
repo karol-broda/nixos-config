@@ -1,0 +1,4 @@
+module qs.features.panels.launcher.sections
+
+ResultsList 1.0 ResultsList.qml
+ResultItem 1.0 ResultItem.qml

@@ -1,0 +1,191 @@
+-- Volume indicator
+-- Displays current volume level with popup slider
+
+local colors = require("colors")
+local icons = require("icons")
+local settings = require("settings")
+
+-- Helper function to get volume icon based on level
+local function get_volume_icon(volume, muted)
+  if muted or volume == 0 then
+    return icons.volume.muted.text
+  elseif volume < 33 then
+    return icons.volume.low.text
+  elseif volume < 66 then
+    return icons.volume.medium.text
+  else
+    return icons.volume.high.text
+  end
+end
+
+-- Create the volume item
+local volume = sbar.add("item", "volume", {
+  position = "right",
+  icon = {
+    string = icons.volume.medium.text,
+    font = {
+      family = settings.font.text,
+      style = settings.font.style_map["Bold"],
+      size = settings.font_size.icon,
+    },
+    color = colors.lavender,
+    padding_left = 8,
+    padding_right = 4,
+  },
+  label = {
+    string = "50%",
+    font = {
+      family = settings.font.numbers,
+      style = settings.font.style_map["Semibold"],
+      size = settings.font_size.label,
+    },
+    color = colors.text,
+    padding_left = 2,
+    padding_right = 8,
+  },
+  background = {
+    color = colors.bg,
+    corner_radius = settings.item.corner_radius,
+    height = settings.item.height,
+    drawing = true,
+  },
+  padding_left = 4,
+  padding_right = 4,
+})
+
+-- Create volume slider popup bracket
+local volume_slider = sbar.add("slider", "volume.slider", {
+  position = "popup." .. volume.name,
+  slider = {
+    highlight_color = colors.lavender,
+    background = {
+      height = 6,
+      corner_radius = 3,
+      color = colors.surface1,
+    },
+    knob = {
+      string = "􀀁",
+      drawing = true,
+    },
+  },
+  background = {
+    color = colors.transparent,
+    corner_radius = settings.popup.corner_radius,
+    height = 30,
+  },
+  width = 120,
+  padding_left = 8,
+  padding_right = 8,
+  script = [[
+    #!/bin/bash
+    osascript -e "set volume output volume $PERCENTAGE"
+  ]],
+})
+
+-- Create volume percentage label in popup
+local volume_percent = sbar.add("item", "volume.percent", {
+  position = "popup." .. volume.name,
+  icon = {
+    drawing = false,
+  },
+  label = {
+    string = "50%",
+    font = {
+      family = settings.font.numbers,
+      style = settings.font.style_map["Bold"],
+      size = settings.font_size.small,
+    },
+    color = colors.lavender,
+    padding_left = 4,
+    padding_right = 4,
+  },
+  background = {
+    color = colors.transparent,
+    height = 20,
+  },
+})
+
+-- Update volume display
+local function update_volume()
+  sbar.exec("osascript -e 'output volume of (get volume settings)'", function(vol_output)
+    local volume_level = tonumber(vol_output)
+
+    if volume_level then
+      -- Check if muted
+      sbar.exec("osascript -e 'output muted of (get volume settings)'", function(mute_output)
+        local is_muted = mute_output:match("true") ~= nil
+
+        -- Update icon based on volume level and mute state
+        local volume_icon = get_volume_icon(volume_level, is_muted)
+        local icon_color = is_muted and colors.surface2 or colors.lavender
+        local label_color = is_muted and colors.surface2 or colors.text
+
+        volume:set({
+          icon = {
+            string = volume_icon,
+            color = icon_color,
+          },
+          label = {
+            string = string.format("%d%%", volume_level),
+            color = label_color,
+          },
+        })
+
+        -- Update slider
+        volume_slider:set({
+          slider = { percentage = volume_level },
+        })
+
+        -- Update percentage label
+        volume_percent:set({
+          label = { string = string.format("%d%%", volume_level) },
+        })
+      end)
+    end
+  end)
+end
+
+-- Subscribe to volume_change event
+volume:subscribe("volume_change", function(env)
+  update_volume()
+end)
+
+-- Click to toggle popup with slider
+volume:subscribe("mouse.clicked", function(env)
+  volume:set({ popup = { drawing = "toggle" } })
+end)
+
+-- Right click to toggle mute
+volume:subscribe("mouse.clicked.right", function(env)
+  sbar.exec("osascript -e 'set volume output muted not (output muted of (get volume settings))'")
+  update_volume()
+end)
+
+-- Hover effect for volume item
+volume:subscribe("mouse.entered", function(env)
+  sbar.animate("tanh", 15, function()
+    volume:set({
+      background = { color = colors.bg_bright },
+      label = { color = colors.lavender },
+    })
+  end)
+end)
+
+volume:subscribe("mouse.exited", function(env)
+  update_volume()
+  sbar.animate("tanh", 15, function()
+    volume:set({
+      background = { color = colors.bg },
+    })
+  end)
+end)
+
+-- Update slider when changed
+volume_slider:subscribe("slider.percentage", function(env)
+  update_volume()
+end)
+
+-- Initial update
+update_volume()
+
+return { volume = volume, slider = volume_slider, percent = volume_percent }

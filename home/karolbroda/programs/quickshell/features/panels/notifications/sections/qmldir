@@ -1,0 +1,5 @@
+module qs.features.panels.notifications.sections
+
+NotifHeader 1.0 NotifHeader.qml
+NotifList 1.0 NotifList.qml
+NotifCard 1.0 NotifCard.qml

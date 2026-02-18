@@ -1,0 +1,5 @@
+module qs.widgets.inputs
+
+TextField 1.0 TextField.qml
+Slider 1.0 Slider.qml
+SearchField 1.0 SearchField.qml

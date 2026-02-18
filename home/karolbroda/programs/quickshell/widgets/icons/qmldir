@@ -1,0 +1,5 @@
+module qs.widgets.icons
+
+Icon 1.0 Icon.qml
+DuotoneIcon 1.0 DuotoneIcon.qml
+AppIcon 1.0 AppIcon.qml

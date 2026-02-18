@@ -1,0 +1,4 @@
+module qs.features.panels.launcher
+
+LauncherPanel 1.0 LauncherPanel.qml
+LauncherState 1.0 LauncherState.qml

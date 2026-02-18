@@ -1,0 +1,9 @@
+module qs.behaviors
+
+FadeIn 1.0 FadeIn.qml
+FadeOut 1.0 FadeOut.qml
+SlideDown 1.0 SlideDown.qml
+SlideUp 1.0 SlideUp.qml
+PressDown 1.0 PressDown.qml
+GlowOnActive 1.0 GlowOnActive.qml
+SpringBounce 1.0 SpringBounce.qml

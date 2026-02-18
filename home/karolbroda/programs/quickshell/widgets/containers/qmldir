@@ -1,0 +1,4 @@
+module qs.widgets.containers
+
+Card 1.0 Card.qml
+Pill 1.0 Pill.qml

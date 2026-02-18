@@ -1,0 +1,8 @@
+module qs.widgets.indicators
+
+Badge 1.0 Badge.qml
+CavaShader 1.0 CavaShader.qml
+CavaVisualizer 1.0 CavaVisualizer.qml
+Dot 1.0 Dot.qml
+Progress 1.0 Progress.qml
+Separator 1.0 Separator.qml

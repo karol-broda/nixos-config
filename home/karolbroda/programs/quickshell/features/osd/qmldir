@@ -1,0 +1,3 @@
+module qs.features.osd
+
+OsdPopup OsdPopup.qml

@@ -1,0 +1,21 @@
+module qs.services
+
+singleton AppIcons AppIcons.qml
+singleton Audio Audio.qml
+singleton Battery Battery.qml
+singleton Brightness Brightness.qml
+singleton Cava Cava.qml
+singleton Elephant Elephant.qml
+singleton Hyprland Hyprland.qml
+singleton Keyboard Keyboard.qml
+
+singleton Network Network.qml
+singleton Notifs Notifs.qml
+singleton Players Players.qml
+singleton Power Power.qml
+singleton Requests Requests.qml
+singleton SystemUsage SystemUsage.qml
+singleton Time Time.qml
+singleton Tray Tray.qml
+singleton Wallpapers Wallpapers.qml
+singleton Weather Weather.qml

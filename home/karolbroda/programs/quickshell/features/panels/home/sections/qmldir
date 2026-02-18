@@ -1,0 +1,5 @@
+module qs.features.panels.home.sections
+
+TrayGrid 1.0 TrayGrid.qml
+TrayMenu 1.0 TrayMenu.qml
+PowerRow 1.0 PowerRow.qml

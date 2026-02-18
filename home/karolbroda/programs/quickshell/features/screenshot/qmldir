@@ -1,0 +1,4 @@
+module qs.features.screenshot
+
+ScreenshotOverlay ScreenshotOverlay.qml
+ScreenshotPicker ScreenshotPicker.qml
