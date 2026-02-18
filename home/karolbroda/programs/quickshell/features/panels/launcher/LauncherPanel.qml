@@ -77,6 +77,7 @@ Panel {
         ResultsList {
             Layout.fillWidth: true
             Layout.preferredHeight: Math.min(400, implicitHeight)
+            Layout.minimumHeight: 100
             results: state.results
             selectedIndex: state.selectedIndex
 

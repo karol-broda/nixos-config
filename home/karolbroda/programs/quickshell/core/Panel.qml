@@ -31,64 +31,28 @@ Item {
 
     clip: true
 
-    implicitWidth: _animateWidth ? 0 : targetWidth
-    implicitHeight: _animateHeight ? 0 : targetHeight
+    implicitWidth: (_animateWidth && !open) ? 0 : targetWidth
+    implicitHeight: (_animateHeight && !open) ? 0 : targetHeight
 
-    states: State {
-        name: "open"
-        when: root.open
+    Behavior on implicitWidth {
+        enabled: root._animateWidth
 
-        PropertyChanges {
-            target: root
-            implicitWidth: root.targetWidth
-            implicitHeight: root.targetHeight
+        NumberAnimation {
+            duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: root.open ? Motion.curveSlide : Motion.curveExit
         }
     }
 
-    transitions: [
-        Transition {
-            from: ""
-            to: "open"
+    Behavior on implicitHeight {
+        enabled: root._animateHeight
 
-            ParallelAnimation {
-                NumberAnimation {
-                    target: root
-                    property: "implicitWidth"
-                    duration: Motion.panelDuration
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Motion.curveSlide
-                }
-                NumberAnimation {
-                    target: root
-                    property: "implicitHeight"
-                    duration: Motion.panelDuration
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Motion.curveSlide
-                }
-            }
-        },
-        Transition {
-            from: "open"
-            to: ""
-
-            ParallelAnimation {
-                NumberAnimation {
-                    target: root
-                    property: "implicitWidth"
-                    duration: Motion.panelDuration
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Motion.curveExit
-                }
-                NumberAnimation {
-                    target: root
-                    property: "implicitHeight"
-                    duration: Motion.panelDuration
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Motion.curveExit
-                }
-            }
+        NumberAnimation {
+            duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: root.open ? Motion.curveSlide : Motion.curveExit
         }
-    ]
+    }
 
     // content container anchored to the slide-from corner/edge
     Item {

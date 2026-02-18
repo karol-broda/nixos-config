@@ -15,6 +15,14 @@ Item {
     function search(text) {
         query = text
         selectedIndex = 0
+
+        // use cached results immediately to prevent empty-state flash
+        // while the async query runs in the background
+        const cached = Elephant.results
+        if (cached !== null && cached !== undefined && cached.length > 0) {
+            results = cached
+        }
+
         Elephant.query(text)
     }
 

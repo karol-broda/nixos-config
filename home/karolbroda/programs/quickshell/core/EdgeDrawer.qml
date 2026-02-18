@@ -54,65 +54,31 @@ Item {
     visible: isCorner ? (width > 0 && height > 0) : (isHorizontal ? width > 0 : height > 0)
     clip: true
 
-    // initial state: corners animate both, edges animate one dimension
-    implicitWidth: isCorner ? 0 : (isHorizontal ? 0 : contentWidth)
-    implicitHeight: isCorner ? 0 : (isVertical ? 0 : contentHeight)
+    readonly property bool _animateWidth: isCorner || isHorizontal
+    readonly property bool _animateHeight: isCorner || isVertical
 
-    states: State {
-        name: "open"
-        when: root.open
+    implicitWidth: (_animateWidth && !open) ? 0 : contentWidth
+    implicitHeight: (_animateHeight && !open) ? 0 : contentHeight
 
-        PropertyChanges {
-            target: root
-            implicitWidth: root.contentWidth
-            implicitHeight: root.contentHeight
+    Behavior on implicitWidth {
+        enabled: root._animateWidth
+
+        NumberAnimation {
+            duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: root.open ? Motion.curveSlide : Motion.curveExit
         }
     }
 
-    transitions: [
-        Transition {
-            from: ""
-            to: "open"
+    Behavior on implicitHeight {
+        enabled: root._animateHeight
 
-            ParallelAnimation {
-                NumberAnimation {
-                    target: root
-                    property: "implicitWidth"
-                    duration: Motion.panelDuration
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Motion.curveSlide
-                }
-                NumberAnimation {
-                    target: root
-                    property: "implicitHeight"
-                    duration: Motion.panelDuration
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Motion.curveSlide
-                }
-            }
-        },
-        Transition {
-            from: "open"
-            to: ""
-
-            ParallelAnimation {
-                NumberAnimation {
-                    target: root
-                    property: "implicitWidth"
-                    duration: Motion.panelDuration
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Motion.curveExit
-                }
-                NumberAnimation {
-                    target: root
-                    property: "implicitHeight"
-                    duration: Motion.panelDuration
-                    easing.type: Easing.BezierSpline
-                    easing.bezierCurve: Motion.curveExit
-                }
-            }
+        NumberAnimation {
+            duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: root.open ? Motion.curveSlide : Motion.curveExit
         }
-    ]
+    }
 
     Shape {
         id: bgShape

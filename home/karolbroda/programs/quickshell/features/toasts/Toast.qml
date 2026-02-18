@@ -24,7 +24,7 @@ Item {
 
     Behavior on opacity {
         NumberAnimation {
-            duration: root._exiting ? Motion.durationMedium : Motion.panelDuration
+            duration: root._exiting ? Motion.panelCloseDuration : Motion.panelOpenDuration
             easing.type: Easing.BezierSpline
             easing.bezierCurve: root._exiting ? Motion.curveExit : Motion.curveSlide
         }
@@ -35,7 +35,7 @@ Item {
 
         Behavior on x {
             NumberAnimation {
-                duration: root._exiting ? Motion.durationMedium : Motion.panelDuration
+                duration: root._exiting ? Motion.panelCloseDuration : Motion.panelOpenDuration
                 easing.type: Easing.BezierSpline
                 easing.bezierCurve: root._exiting ? Motion.curveExit : Motion.curveSlide
             }
@@ -58,7 +58,7 @@ Item {
                 && root.notification.notification.expireTimeout > 0) {
                 baseTimeout = root.notification.notification.expireTimeout
             }
-            return Math.max(500, baseTimeout - Motion.panelDuration)
+            return Math.max(500, baseTimeout - Motion.panelOpenDuration)
         }
         running: root.notification !== null && root._entered && !root._exiting
         onTriggered: {
@@ -69,7 +69,7 @@ Item {
 
     Timer {
         id: _exitTimer
-        interval: Motion.panelDuration + 50
+        interval: Motion.panelCloseDuration + 50
         onTriggered: root.exitDone(root._fullDismiss)
     }
 

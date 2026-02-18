@@ -3,7 +3,7 @@ import qs.theme
 
 Behavior on y {
     NumberAnimation {
-        duration: Motion.panelDuration
+        duration: Motion.panelOpenDuration
         easing.type: Easing.BezierSpline
         easing.bezierCurve: Motion.curveSlide
     }

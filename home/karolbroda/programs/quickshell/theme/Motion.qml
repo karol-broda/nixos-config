@@ -13,7 +13,8 @@ Singleton {
     readonly property int durationSlow: 400
     readonly property int durationVerySlow: 600
 
-    readonly property int panelDuration: 350
+    readonly property int panelOpenDuration: 350
+    readonly property int panelCloseDuration: 260
     readonly property int hoverDuration: 150
     readonly property int pressDuration: 100
     readonly property int glowDuration: 300
@@ -24,13 +25,13 @@ Singleton {
     readonly property var curveEnter: [0.0, 0.0, 0.2, 1.0, 1, 1]
 
     // faster exit
-    readonly property var curveExit: [0.4, 0.0, 1.0, 1.0, 1, 1]
+    readonly property var curveExit: [0.15, 0.4, 0.15, 1.0, 1, 1]
 
     // glide: slow deceleration
     readonly property var curveGlide: [0.23, 1.0, 0.32, 1.0, 1, 1]
 
     // slide for panels
-    readonly property var curveSlide: [0.16, 1.0, 0.3, 1.0, 1, 1]
+    readonly property var curveSlide: [0.25, 0.1, 0.1, 1.0, 1, 1]
 
     // spring with overshoot
     readonly property var curveSpring: [0.34, 1.56, 0.64, 1.0, 1, 1]
@@ -39,5 +40,5 @@ Singleton {
     readonly property var curveSmooth: [0.4, 0.0, 0.2, 1.0, 1, 1]
 
     readonly property int staggerDelay: 50
-    readonly property int contentDelay: 100
+    readonly property int contentDelay: 70
 }
