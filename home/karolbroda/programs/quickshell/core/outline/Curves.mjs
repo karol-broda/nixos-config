@@ -96,22 +96,26 @@ function earCurve(corner, incomingDir, outgoingDir, incomingIsFrame, radius, cur
     const frameY = corner.y + frameExtensionDir.y * radius
 
     // walk order: frame→body when incoming is frame, body→frame otherwise
-    let startX, startY, endX, endY
+    let startX, startY, endX, endY, cp1Dir, cp2Dir
     if (incomingIsFrame) {
         startX = frameX; startY = frameY
         endX = bodyX; endY = bodyY
+        cp1Dir = frameExtensionDir
+        cp2Dir = bodyDir
     } else {
         startX = bodyX; startY = bodyY
         endX = frameX; endY = frameY
+        cp1Dir = bodyDir
+        cp2Dir = frameExtensionDir
     }
 
     return {
         startX: startX,
         startY: startY,
-        cp1x: startX - frameExtensionDir.x * controlOffset,
-        cp1y: startY - frameExtensionDir.y * controlOffset,
-        cp2x: endX - bodyDir.x * controlOffset,
-        cp2y: endY - bodyDir.y * controlOffset,
+        cp1x: startX - cp1Dir.x * controlOffset,
+        cp1y: startY - cp1Dir.y * controlOffset,
+        cp2x: endX - cp2Dir.x * controlOffset,
+        cp2y: endY - cp2Dir.y * controlOffset,
         endX: endX,
         endY: endY
     }
