@@ -37,16 +37,6 @@ Panel {
     }
     Keys.onUpPressed: state.selectPrev()
     Keys.onDownPressed: state.selectNext()
-    Keys.onReturnPressed: {
-        if (state.activateSelected()) {
-            Dispatcher.dispatch(Actions.closePanel())
-        }
-    }
-    Keys.onEnterPressed: {
-        if (state.activateSelected()) {
-            Dispatcher.dispatch(Actions.closePanel())
-        }
-    }
 
     ColumnLayout {
         id: content

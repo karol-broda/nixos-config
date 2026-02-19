@@ -1,7 +1,7 @@
 {pkgs, ...}: {
   imports = [
     ./git.nix
-    ./shell.nix
+    ./shell
     ./nvim
     ./direnv.nix
     ./bat.nix
@@ -9,7 +9,6 @@
     ./wezterm.nix
     ./superfile.nix
     ./fastfetch.nix
-    ./zoxide.nix
     ./firefox.nix
     ./librewolf.nix
     ./obsidian.nix

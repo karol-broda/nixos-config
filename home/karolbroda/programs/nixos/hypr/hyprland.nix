@@ -1,4 +1,4 @@
-{...}: {
+{ ... }: {
   wayland.windowManager.hyprland = {
     enable = true;
     settings = {
@@ -167,7 +167,7 @@
       };
 
       input = {
-        kb_layout = "us,de";
+        kb_layout = "us,de,pl";
         follow_mouse = 1;
         sensitivity = 0;
         touchpad = {
