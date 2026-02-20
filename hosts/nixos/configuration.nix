@@ -1,6 +1,9 @@
 {
   pkgs,
+  pkgs-unstable,
+  pkgs-old-working,
   inputs,
+  username,
   ...
 }: let
   hytale-pkg = pkgs.callPackage ../../pkgs/hytale-launcher.nix {};
@@ -42,9 +45,15 @@ in {
     ];
   };
 
-  nixpkgs.config.allowUnfree = true;
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 14d";
+  };
 
-  nixpkgs.overlays = [inputs.nur.overlays.default];
+  nix.optimise.automatic = true;
+
+  nixpkgs.config.allowUnfree = true;
 
   programs.zsh.enable = true;
 
@@ -66,7 +75,10 @@ in {
   };
   services.resolved.enable = true;
 
-  services.netbird.enable = true;
+  services.netbird = {
+    enable = true;
+    package = pkgs-unstable.netbird;
+  };
 
   hardware.bluetooth = {
     enable = true;
@@ -137,7 +149,7 @@ in {
     restart = true;
     settings = {
       default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --cmd start-hyprland";
+        command = "${pkgs-unstable.tuigreet}/bin/tuigreet --cmd start-hyprland";
       };
     };
   };
@@ -152,7 +164,7 @@ in {
     TTYVTDisallocate = true;
   };
 
-  users.users.karolbroda = {
+  users.users.${username} = {
     isNormalUser = true;
     extraGroups = [
       "wheel"
@@ -165,7 +177,6 @@ in {
     shell = pkgs.zsh;
   };
 
-  # thunderbolt device authorization — needed for DP tunneling through TB docks
   services.hardware.bolt.enable = true;
 
   services.upower.enable = true;
@@ -173,7 +184,7 @@ in {
 
   security.sudo.extraRules = [
     {
-      users = ["karolbroda"];
+      users = [username];
       commands = [
         {
           command = "ALL";
@@ -186,8 +197,8 @@ in {
   programs._1password.enable = true;
   programs._1password-gui = {
     enable = true;
-    package = pkgs._1password-gui;
-    polkitPolicyOwners = ["karolbroda"];
+    package = pkgs-unstable._1password-gui;
+    polkitPolicyOwners = [username];
   };
 
   services.gnome.gnome-keyring.enable = true;
@@ -215,17 +226,12 @@ in {
     cliphist
     xclip
     wl-clipboard
-    brightnessctl
     playerctl
     pavucontrol
     kdePackages.dolphin
     libsecret
     seahorse
     libinput
-    libqalculate
-    grim
-    ddcutil
-    lm_sensors
     ncurses
     obs-studio
     vlc
@@ -234,7 +240,6 @@ in {
     speedtest-go
     nil
     teams-for-linux
-    swappy
     libnotify
     bluetuith
     man-db
@@ -242,14 +247,14 @@ in {
     man-pages-posix
     glibcInfo
     amp-cli
-    rpi-imager
+    pkgs-unstable.rpi-imager
     papirus-icon-theme
     adwaita-icon-theme
     age
-    netbird-ui
+    pkgs-unstable.netbird-ui
     openssl
     unzip
-    modrinth-app
+    pkgs-old-working.modrinth-app
     lunar-client
     ferium
     prismlauncher
@@ -261,7 +266,7 @@ in {
     yaak
     dnsutils
     spacenavd
-    freecad
+    pkgs-unstable.freecad
     openscad
     kicad
     gnome-network-displays
@@ -275,15 +280,9 @@ in {
   ];
 
   documentation = {
-    dev = {
-      enable = true;
-    };
-    doc = {
-      enable = true;
-    };
-    man = {
-      enable = true;
-    };
+    dev.enable = true;
+    doc.enable = true;
+    man.enable = true;
   };
 
   fonts.fontconfig.enable = true;

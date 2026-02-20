@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{pkgs, pkgs-unstable, ...}: {
   imports = [
     ./options.nix
     ./keymaps.nix
@@ -100,7 +100,7 @@
       # formatters (referenced by conform-nvim)
       stylua
       nixpkgs-fmt
-      prettier
+      pkgs-unstable.prettier
       black
       isort
       rustfmt

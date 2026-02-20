@@ -1,6 +1,7 @@
 {
   pkgs,
   inputs,
+  username,
   lib,
   ...
 }: let
@@ -12,8 +13,8 @@ in {
     ./programs/darwin
   ];
 
-  home.username = "karolbroda";
-  home.homeDirectory = "/Users/karolbroda";
+  home.username = username;
+  home.homeDirectory = "/Users/${username}";
   home.stateVersion = "25.05";
 
   programs.home-manager.enable = true;
@@ -75,8 +76,6 @@ in {
     snitchPkg
 
     phosphorIcons
-
-    code-cursor
   ];
 
   fonts.fontconfig.enable = true;

@@ -24,8 +24,8 @@
         experiments.enable = true;
 
         betterUploadButton.enable = true;
-        clearUrLs.enable = true;
-        copyUserUrLs.enable = true;
+        ClearURLs.enable = true;
+        CopyUserURLs.enable = true;
         fakeNitro = {
           enable = true;
           enableEmojiBypass = true;
@@ -76,7 +76,7 @@
         sendTimestamps.enable = true;
         voiceMessages.enable = true;
         voiceDownload.enable = true;
-        usrbg.enable = true;
+        USRBG.enable = true;
         decor.enable = true;
         shikiCodeblocks.enable = true;
         betterSettings.enable = true;

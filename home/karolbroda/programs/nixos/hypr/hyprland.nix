@@ -69,12 +69,7 @@
         "XCURSOR_THEME,Bibata-Modern-Ice"
         "WLR_XCURSOR_THEME,Bibata-Modern-Ice"
         "HYPRCURSOR_THEME,Bibata-Modern-Ice"
-        "WLR_XCURSOR_THEME,Breeze"
         "WLR_XCURSOR_SIZE,24"
-        "QT_QPA_PLATFORMTHEME,kvantum"
-        "QT_STYLE_OVERRIDE,kvantum"
-        "QT_AUTO_SCREEN_SCALE_FACTOR,1"
-        "GTK_THEME,adw-gtk3-dark"
       ];
 
       "ecosystem:enforce_permissions" = true;

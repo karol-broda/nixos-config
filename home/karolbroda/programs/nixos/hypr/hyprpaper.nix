@@ -1,5 +1,5 @@
-{pkgs, ...}: {
-  home.packages = [pkgs.hyprpaper];
+{pkgs-unstable, ...}: {
+  home.packages = [pkgs-unstable.hyprpaper];
 
   xdg.configFile."hypr/hyprpaper.conf".text = ''
     ipc = on

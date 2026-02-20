@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    nixpkgs-master.url = "github:nixos/nixpkgs";
     nixpkgs-old-working.url = "github:NixOS/nixpkgs/20075955deac2583bb12f07151c2df830ef346b4";
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
@@ -87,56 +86,37 @@
     self,
     nixpkgs,
     nixpkgs-unstable,
-    nixpkgs-darwin,
     nixpkgs-old-working,
     nix-darwin,
-    hyprland,
     home-manager,
     home-manager-darwin,
     catppuccin,
-    nixvim,
     nur,
-    try,
-    snitch,
-    elephant,
     nix-homebrew,
     homebrew-core,
     homebrew-cask,
     quickshell,
     ...
   } @ inputs: let
+    username = "karolbroda";
+
     systemsList = [
       "x86_64-linux"
       "aarch64-darwin"
     ];
     eachSystem = nixpkgs.lib.genAttrs systemsList;
-    mkUnstableOverlay = system: (
-      final: prev: let
-        unstablePkgs = import nixpkgs-unstable {
-          inherit system;
-          config = prev.config;
-        };
-        oldWorkingPkgs = import nixpkgs-old-working {
-          inherit system;
-          config = prev.config;
-        };
-      in {
-        tuigreet = unstablePkgs.tuigreet;
-        app2unit = unstablePkgs.app2unit;
-        prettier = unstablePkgs.prettier;
-        hyprland = unstablePkgs.hyprland;
-        hyprpaper = unstablePkgs.hyprpaper;
-        _1password-gui = unstablePkgs._1password-gui;
-        _1password-cli = unstablePkgs._1password-cli;
-        zellij = unstablePkgs.zellij;
-        rpi-imager = unstablePkgs.rpi-imager;
-        netbird = unstablePkgs.netbird;
-        netbird-ui = unstablePkgs.netbird-ui;
-        code-cursor = unstablePkgs.code-cursor;
-        freecad = unstablePkgs.freecad;
-        modrinth-app = oldWorkingPkgs.modrinth-app;
-      }
-    );
+
+    mkPkgsUnstable = system:
+      import nixpkgs-unstable {
+        inherit system;
+        config.allowUnfree = true;
+      };
+
+    mkPkgsOldWorking = system:
+      import nixpkgs-old-working {
+        inherit system;
+        config.allowUnfree = true;
+      };
 
     overlayNur = nur.overlays.default;
 
@@ -148,19 +128,19 @@
   in {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       specialArgs = {
-        inherit inputs;
+        inherit inputs username;
+        pkgs-unstable = mkPkgsUnstable "x86_64-linux";
+        pkgs-old-working = mkPkgsOldWorking "x86_64-linux";
       };
 
       modules = [
         {nixpkgs.hostPlatform = "x86_64-linux";}
         ./hosts/nixos/configuration.nix
-        ./hosts/nixos/hardware-configuration.nix
 
         {
           nixpkgs.overlays = [
             overlayNur
             overlayPhosphor
-            (mkUnstableOverlay "x86_64-linux")
             quickshell.overlays.default
           ];
         }
@@ -172,7 +152,6 @@
           ];
         }
 
-        catppuccin.nixosModules.catppuccin
         home-manager.nixosModules.home-manager
 
         {
@@ -180,7 +159,10 @@
           home-manager.useUserPackages = true;
           home-manager.backupFileExtension = "backup";
 
-          home-manager.extraSpecialArgs = {inherit inputs;};
+          home-manager.extraSpecialArgs = {
+            inherit inputs username;
+            pkgs-unstable = mkPkgsUnstable "x86_64-linux";
+          };
 
           home-manager.sharedModules = [
             inputs.spicetify-nix.homeManagerModules.spicetify
@@ -192,7 +174,7 @@
             inputs.elephant.homeManagerModules.elephant
           ];
 
-          home-manager.users.karolbroda = import ./home/karolbroda/nixos.nix;
+          home-manager.users.${username} = import ./home/karolbroda/nixos.nix;
         }
       ];
     };
@@ -201,7 +183,7 @@
       system = "aarch64-darwin";
 
       specialArgs = {
-        inherit inputs;
+        inherit inputs username;
       };
 
       modules = [
@@ -219,7 +201,7 @@
           nix-homebrew = {
             enable = true;
             enableRosetta = true;
-            user = "karolbroda";
+            user = username;
             autoMigrate = true;
 
             taps = {
@@ -238,7 +220,10 @@
           home-manager.useUserPackages = true;
           home-manager.backupFileExtension = "backup";
 
-          home-manager.extraSpecialArgs = {inherit inputs;};
+          home-manager.extraSpecialArgs = {
+            inherit inputs username;
+            pkgs-unstable = mkPkgsUnstable "aarch64-darwin";
+          };
 
           home-manager.sharedModules = [
             inputs.spicetify-nix.homeManagerModules.spicetify
@@ -248,10 +233,11 @@
             inputs.try.homeModules.default
           ];
 
-          home-manager.users.karolbroda = import ./home/karolbroda/darwin.nix;
+          home-manager.users.${username} = import ./home/karolbroda/darwin.nix;
         }
       ];
     };
+
     devShells = eachSystem (
       system: let
         pkgs = pkgsFor system;

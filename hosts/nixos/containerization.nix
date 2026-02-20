@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{pkgs, username, ...}: {
   virtualisation.docker = {
     enable = true;
     enableOnBoot = true;
@@ -20,7 +20,7 @@
     # };
   };
 
-  users.users.karolbroda = {
+  users.users.${username} = {
     extraGroups = ["docker"];
     linger = true;
   };

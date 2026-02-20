@@ -1,9 +1,13 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  username,
+  ...
+}: {
   imports = [
     ./homebrew.nix
   ];
 
-  system.primaryUser = "karolbroda";
+  system.primaryUser = username;
 
   nix.settings = {
     experimental-features = [
@@ -20,6 +24,14 @@
     ];
   };
 
+  nix.gc = {
+    automatic = true;
+    interval.Day = 7;
+    options = "--delete-older-than 14d";
+  };
+
+  nix.optimise.automatic = true;
+
   nixpkgs.config.allowUnfree = true;
 
   system.defaults = {
@@ -33,8 +45,8 @@
       launchanim = false;
       expose-animation-duration = 0.1;
       persistent-apps = [
-        "/Users/karolbroda/Applications/Home Manager Apps/Firefox.app"
-        "/Users/karolbroda/Applications/Home Manager Apps/Ghostty.app"
+        "/Users/${username}/Applications/Home Manager Apps/Firefox.app"
+        "/Users/${username}/Applications/Home Manager Apps/Ghostty.app"
       ];
     };
 
@@ -88,7 +100,6 @@
     spaces.spans-displays = false;
 
     CustomUserPreferences = {
-      # prevent .DS_Store files on network/usb volumes
       "com.apple.desktopservices" = {
         DSDontWriteNetworkStores = true;
         DSDontWriteUSBStores = true;
@@ -106,8 +117,6 @@
         ShowSidebar = true;
         SidebarWidth = 180;
       };
-      # sidebar favorites can't be managed declaratively, theyre stored in a binary plist
-      # at ~/Library/Application Support/com.apple.sharedfilelist/
       "com.apple.AppleMultitouchTrackpad" = {
         TrackpadFourFingerVertSwipeGesture = 2;
       };
@@ -132,9 +141,9 @@
 
   security.pam.services.sudo_local.touchIdAuth = true;
 
-  users.users.karolbroda = {
-    name = "karolbroda";
-    home = "/Users/karolbroda";
+  users.users.${username} = {
+    name = username;
+    home = "/Users/${username}";
     shell = pkgs.zsh;
   };
 

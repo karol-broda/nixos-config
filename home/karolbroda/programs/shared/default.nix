@@ -1,4 +1,8 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  pkgs-unstable,
+  ...
+}: {
   imports = [
     ./git.nix
     ./shell
@@ -26,6 +30,6 @@
     just
     posting
     television
-    code-cursor
+    pkgs-unstable.code-cursor
   ];
 }

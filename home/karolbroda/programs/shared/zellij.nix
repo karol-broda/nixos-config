@@ -1,4 +1,4 @@
-{pkgs, ...}: let
+{pkgs, pkgs-unstable, ...}: let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   copyCmd =
     if isDarwin
@@ -7,6 +7,7 @@
 in {
   programs.zellij = {
     enable = true;
+    package = pkgs-unstable.zellij;
 
     settings = {
       theme = "catppuccin-frappe";

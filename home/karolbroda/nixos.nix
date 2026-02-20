@@ -1,6 +1,8 @@
 {
   pkgs,
+  pkgs-unstable,
   inputs,
+  username,
   ...
 }: let
   tryPkg = inputs.try.packages.${pkgs.stdenv.hostPlatform.system}.default;
@@ -11,8 +13,8 @@ in {
     ./programs/nixos
   ];
 
-  home.username = "karolbroda";
-  home.homeDirectory = "/home/karolbroda";
+  home.username = username;
+  home.homeDirectory = "/home/${username}";
   home.stateVersion = "25.05";
 
   programs.home-manager.enable = true;
@@ -39,7 +41,7 @@ in {
     fastfetch
     htop
     hyprlock
-    app2unit
+    pkgs-unstable.app2unit
 
     kdePackages.kconfig
     gowall
