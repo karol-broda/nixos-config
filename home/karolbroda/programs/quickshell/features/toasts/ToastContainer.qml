@@ -117,8 +117,8 @@ Item {
 
         anchors.top: parent.top
         anchors.right: parent.right
-        anchors.topMargin: Spacing.barHeight + Spacing.frameWidth
-        anchors.rightMargin: Spacing.frameWidth
+        anchors.topMargin: Spacing.panelTopInset
+        anchors.rightMargin: Spacing.panelSideInset
 
         panelName: ""
         screenActive: true

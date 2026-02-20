@@ -3,28 +3,21 @@ import QtQuick.Shapes
 import qs.theme
 import "PanelPath.mjs" as PanelPath
 
-Item {
+Panel {
     id: root
 
-    // which edge/corner to slide from:
-    // edges: "left", "right", "top", "bottom"
-    // corners: "top-left", "top-right", "bottom-left", "bottom-right"
     property string edge: "left"
-
-    property bool open: false
-
     property int contentWidth: 300
     property int contentHeight: 400
-
     property bool showBackground: false
 
-    default property alias content: contentContainer.data
+    slideFrom: edge
+    targetWidth: contentWidth
+    targetHeight: contentHeight
+    contentFade: false
 
-    readonly property bool isCorner: edge.indexOf("-") !== -1
-    readonly property bool isHorizontal: edge === "left" || edge === "right"
-    readonly property bool isVertical: edge === "top" || edge === "bottom"
+    visible: _isCorner ? (width > 0 && height > 0) : (_isHorizontal ? width > 0 : height > 0)
 
-    // map edge string to PanelPath bitflags
     readonly property int _edgeFlags: {
         if (edge === "top") return 1
         if (edge === "right") return 2
@@ -37,47 +30,17 @@ Item {
         return 0
     }
 
-    // body size shrunk so ears fit within contentWidth x contentHeight
     readonly property real _pathWidth: {
         const r = Spacing.frameInnerRadius;
-        if (isVertical) return contentWidth - r * 2;
-        if (isCorner) return contentWidth - r;
+        if (_isVertical) return contentWidth - r * 2;
+        if (_isCorner) return contentWidth - r;
         return contentWidth;
     }
     readonly property real _pathHeight: {
         const r = Spacing.frameInnerRadius;
-        if (isHorizontal) return contentHeight - r * 2;
-        if (isCorner) return contentHeight - r;
+        if (_isHorizontal) return contentHeight - r * 2;
+        if (_isCorner) return contentHeight - r;
         return contentHeight;
-    }
-
-    visible: isCorner ? (width > 0 && height > 0) : (isHorizontal ? width > 0 : height > 0)
-    clip: true
-
-    readonly property bool _animateWidth: isCorner || isHorizontal
-    readonly property bool _animateHeight: isCorner || isVertical
-
-    implicitWidth: (_animateWidth && !open) ? 0 : contentWidth
-    implicitHeight: (_animateHeight && !open) ? 0 : contentHeight
-
-    Behavior on implicitWidth {
-        enabled: root._animateWidth
-
-        NumberAnimation {
-            duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: root.open ? Motion.curveSlide : Motion.curveExit
-        }
-    }
-
-    Behavior on implicitHeight {
-        enabled: root._animateHeight
-
-        NumberAnimation {
-            duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
-            easing.type: Easing.BezierSpline
-            easing.bezierCurve: root.open ? Motion.curveSlide : Motion.curveExit
-        }
     }
 
     Shape {
@@ -95,8 +58,7 @@ Item {
             );
         }
 
-        // ears fit exactly within contentContainer after inset calculation
-        anchors.fill: contentContainer
+        anchors.fill: parent
         visible: root.showBackground && pathData.length > 0
         preferredRendererType: Shape.CurveRenderer
 
@@ -108,22 +70,5 @@ Item {
                 path: PanelPath.toSvgString(bgShape.pathData)
             }
         }
-    }
-
-    // content container with fixed size, anchored to the slide edge/corner
-    Item {
-        id: contentContainer
-
-        width: root.contentWidth
-        height: root.contentHeight
-
-        anchors.left: (root.edge === "left" || root.edge === "top-left" || root.edge === "bottom-left") ? parent.left : undefined
-        anchors.right: (root.edge === "right" || root.edge === "top-right" || root.edge === "bottom-right") ? parent.right : undefined
-        anchors.top: (root.edge === "top" || root.edge === "top-left" || root.edge === "top-right") ? parent.top : undefined
-        anchors.bottom: (root.edge === "bottom" || root.edge === "bottom-left" || root.edge === "bottom-right") ? parent.bottom : undefined
-
-        // center on the non-anchored axis for edge-only panels
-        anchors.verticalCenter: root.isHorizontal ? parent.verticalCenter : undefined
-        anchors.horizontalCenter: root.isVertical ? parent.horizontalCenter : undefined
     }
 }

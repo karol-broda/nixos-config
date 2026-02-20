@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import qs.theme
 import qs.core
 import qs.widgets.text
+import qs.widgets.indicators
 import "sections"
 
 Panel {
@@ -34,20 +35,16 @@ Panel {
             Layout.fillWidth: true
         }
 
-        Rectangle {
+        Separator {
             Layout.fillWidth: true
-            height: 1
-            color: Colors.divider
         }
 
         QuickToggles {
             Layout.fillWidth: true
         }
 
-        Rectangle {
+        Separator {
             Layout.fillWidth: true
-            height: 1
-            color: Colors.divider
         }
 
         MediaCard {

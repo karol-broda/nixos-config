@@ -230,6 +230,22 @@ ShellRoot {
                     }
                 }
 
+                // dim scrim behind panels
+                Rectangle {
+                    anchors.fill: parent
+                    color: Colors.withAlpha(Colors.crust, 0.25)
+                    opacity: screenRoot.panelActiveHere ? 1 : 0
+                    visible: opacity > 0.01
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: Motion.durationNormal
+                            easing.type: Easing.BezierSpline
+                            easing.bezierCurve: Motion.curveEnter
+                        }
+                    }
+                }
+
                 MouseArea {
                     anchors.fill: parent
                     visible: screenRoot.panelActiveHere
@@ -251,6 +267,13 @@ ShellRoot {
                                 result.push(item.panelRect)
                             }
                         }
+                        var closingCount = closingSubMenuRepeater.count
+                        for (var j = 0; j < closingCount; j++) {
+                            var ci = closingSubMenuRepeater.itemAt(j)
+                            if (ci !== null && ci !== undefined && ci.width > 0 && ci.height > 0) {
+                                result.push(ci.panelRect)
+                            }
+                        }
                         return result
                     }
 
@@ -261,10 +284,10 @@ ShellRoot {
                         launcherPanel.panelRect,
                         notifPanel.panelRect
                     ].concat(_subMenuRects)
-                    frameTop: Spacing.barHeight + Spacing.frameWidth
-                    frameLeft: Spacing.frameWidth
-                    frameRight: panelsWindow.width - Spacing.frameWidth
-                    frameBottom: panelsWindow.height - Spacing.frameWidth
+                    frameTop: Spacing.panelTopInset
+                    frameLeft: Spacing.panelSideInset
+                    frameRight: panelsWindow.width - Spacing.panelSideInset
+                    frameBottom: panelsWindow.height - Spacing.panelSideInset
                     gapThreshold: 0
                 }
 
@@ -272,9 +295,9 @@ ShellRoot {
                     id: homePanel
                     screenActive: screenRoot.panelActiveHere
                     anchors.left: parent.left
-                    anchors.leftMargin: Spacing.frameWidth
+                    anchors.leftMargin: Spacing.panelSideInset
                     anchors.top: parent.top
-                    anchors.topMargin: Spacing.barHeight + Spacing.frameWidth
+                    anchors.topMargin: Spacing.panelTopInset
                 }
 
                 TrayFlyout {
@@ -282,7 +305,7 @@ ShellRoot {
                     panelOpen: homePanel.isOpen
                     x: homePanel.x + homePanel.width
                     anchors.top: parent.top
-                    anchors.topMargin: Spacing.barHeight + Spacing.frameWidth
+                    anchors.topMargin: Spacing.panelTopInset
                 }
 
                 Repeater {
@@ -300,13 +323,29 @@ ShellRoot {
                     }
                 }
 
+                Repeater {
+                    id: closingSubMenuRepeater
+                    model: Tray.closingSubMenus
+
+                    delegate: TraySubMenu {
+                        required property var modelData
+                        required property int index
+
+                        x: modelData.x
+                        y: modelData.y
+                        menuEntry: modelData.entry
+                        level: index
+                        closing: true
+                    }
+                }
+
                 DashboardPanel {
                     id: dashboardPanel
                     screenActive: screenRoot.panelActiveHere
                     anchors.right: parent.right
-                    anchors.rightMargin: Spacing.frameWidth
+                    anchors.rightMargin: Spacing.panelSideInset
                     anchors.top: parent.top
-                    anchors.topMargin: Spacing.barHeight + Spacing.frameWidth
+                    anchors.topMargin: Spacing.panelTopInset
                 }
 
                 LauncherPanel {
@@ -314,16 +353,16 @@ ShellRoot {
                     screenActive: screenRoot.panelActiveHere
                     anchors.horizontalCenter: parent.horizontalCenter
                     anchors.top: parent.top
-                    anchors.topMargin: Spacing.barHeight + Spacing.frameWidth
+                    anchors.topMargin: Spacing.panelTopInset
                 }
 
                 NotifPanel {
                     id: notifPanel
                     screenActive: screenRoot.panelActiveHere
                     anchors.right: parent.right
-                    anchors.rightMargin: Spacing.frameWidth
+                    anchors.rightMargin: Spacing.panelSideInset
                     anchors.top: parent.top
-                    anchors.topMargin: Spacing.barHeight + Spacing.frameWidth
+                    anchors.topMargin: Spacing.panelTopInset
                 }
 
                 Item {

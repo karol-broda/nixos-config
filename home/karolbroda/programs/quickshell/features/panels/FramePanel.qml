@@ -81,6 +81,18 @@ Item {
 
             opacity: root.isOpen ? 1 : 0
 
+            property real _revealOffset: root.isOpen ? 0 : 6
+
+            Behavior on _revealOffset {
+                NumberAnimation {
+                    duration: root.isOpen ? Motion.panelOpenDuration : Motion.panelCloseDuration
+                    easing.type: Easing.BezierSpline
+                    easing.bezierCurve: root.isOpen ? Motion.curveSlide : Motion.curveExit
+                }
+            }
+
+            transform: Translate { y: contentArea._revealOffset }
+
             Behavior on opacity {
                 SequentialAnimation {
                     PauseAnimation { duration: root.isOpen ? Motion.contentDelay : 0 }

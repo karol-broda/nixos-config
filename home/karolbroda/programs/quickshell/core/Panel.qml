@@ -12,6 +12,12 @@ Item {
     // "top-left", "top-right", "bottom-left", "bottom-right", "top", "bottom", "left", "right"
     property string slideFrom: "top-left"
 
+    // whether content uses its own fade + settle animation on reveal
+    property bool contentFade: true
+
+    // temporarily suppress animation (used to set initial size without transition)
+    property bool suppressAnimation: false
+
     // exposed geometry for PanelOutline to read
     readonly property var panelRect: ({
         x: root.x,
@@ -35,7 +41,7 @@ Item {
     implicitHeight: (_animateHeight && !open) ? 0 : targetHeight
 
     Behavior on implicitWidth {
-        enabled: root._animateWidth
+        enabled: root._animateWidth && !root.suppressAnimation
 
         NumberAnimation {
             duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
@@ -45,7 +51,7 @@ Item {
     }
 
     Behavior on implicitHeight {
-        enabled: root._animateHeight
+        enabled: root._animateHeight && !root.suppressAnimation
 
         NumberAnimation {
             duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
@@ -64,9 +70,7 @@ Item {
         anchors.left: {
             if (root.slideFrom === "left"
                 || root.slideFrom === "top-left"
-                || root.slideFrom === "bottom-left"
-                || root.slideFrom === "top"
-                || root.slideFrom === "bottom") {
+                || root.slideFrom === "bottom-left") {
                 return parent.left
             }
             return undefined
@@ -82,9 +86,7 @@ Item {
         anchors.top: {
             if (root.slideFrom === "top"
                 || root.slideFrom === "top-left"
-                || root.slideFrom === "top-right"
-                || root.slideFrom === "left"
-                || root.slideFrom === "right") {
+                || root.slideFrom === "top-right") {
                 return parent.top
             }
             return undefined
@@ -101,9 +103,25 @@ Item {
         anchors.horizontalCenter: root._isVertical ? parent.horizontalCenter : undefined
         anchors.verticalCenter: root._isHorizontal ? parent.verticalCenter : undefined
 
-        opacity: root.open ? 1 : 0
+        opacity: root.contentFade ? (root.open ? 1 : 0) : 1
+
+        property real _revealOffset: root.contentFade ? (root.open ? 0 : 6) : 0
+
+        Behavior on _revealOffset {
+            enabled: root.contentFade
+
+            NumberAnimation {
+                duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: root.open ? Motion.curveSlide : Motion.curveExit
+            }
+        }
+
+        transform: Translate { y: contentArea._revealOffset }
 
         Behavior on opacity {
+            enabled: root.contentFade
+
             SequentialAnimation {
                 PauseAnimation { duration: root.open ? Motion.contentDelay : 0 }
                 NumberAnimation {

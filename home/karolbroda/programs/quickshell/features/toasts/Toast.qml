@@ -4,6 +4,7 @@ import qs.theme
 import qs.widgets.icons
 import qs.widgets.text
 import qs.widgets.buttons
+import qs.widgets.indicators
 
 Item {
     id: root
@@ -91,11 +92,9 @@ Item {
         anchors.right: parent.right
         spacing: Spacing.spacingSm
 
-        Rectangle {
+        Separator {
             Layout.fillWidth: true
             Layout.bottomMargin: Spacing.spacingXs
-            height: 1
-            color: Colors.divider
             visible: root.showDivider && !root._exiting
         }
 

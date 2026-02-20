@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
+import qs.theme
 
 Singleton {
     id: root
@@ -15,6 +16,19 @@ Singleton {
     property var activeMenuHandle: null
     property var activeMenuItem: null
     property var subMenuStack: []
+    property var closingSubMenus: []
+
+    function _stageForClose(items) {
+        if (items.length === 0) return
+        root.closingSubMenus = items
+        _closingCleanup.restart()
+    }
+
+    Timer {
+        id: _closingCleanup
+        interval: Motion.panelCloseDuration
+        onTriggered: root.closingSubMenus = []
+    }
 
     function openMenu(item) {
         if (item === null || item === undefined) return
@@ -29,12 +43,14 @@ Singleton {
             return
         }
 
+        _stageForClose(root.subMenuStack)
         root.activeMenuItem = item
         root.activeMenuHandle = item.menu
         root.subMenuStack = []
     }
 
     function closeMenu() {
+        _stageForClose(root.subMenuStack)
         root.activeMenuHandle = null
         root.activeMenuItem = null
         root.subMenuStack = []
@@ -42,6 +58,8 @@ Singleton {
 
     function openSubMenu(entry, xPos, yPos, level) {
         if (entry === null || entry === undefined) return
+        var removed = root.subMenuStack.slice(level)
+        _stageForClose(removed)
         var stack = root.subMenuStack.slice(0, level)
         stack.push({ entry: entry, x: xPos, y: yPos })
         root.subMenuStack = stack
@@ -50,10 +68,13 @@ Singleton {
 
     function closeSubMenusFrom(level) {
         if (root.subMenuStack.length <= level) return
+        var removed = root.subMenuStack.slice(level)
+        _stageForClose(removed)
         root.subMenuStack = root.subMenuStack.slice(0, level)
     }
 
     function closeAllSubMenus() {
+        _stageForClose(root.subMenuStack)
         root.subMenuStack = []
     }
 

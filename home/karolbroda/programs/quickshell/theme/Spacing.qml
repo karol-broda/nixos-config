@@ -49,4 +49,8 @@ Singleton {
     readonly property int frameInnerRadius: 12
 
     readonly property real panelCurvature: 0.552
+
+    // computed insets from screen edges to the panel content area
+    readonly property int panelTopInset: barHeight + frameWidth
+    readonly property int panelSideInset: frameWidth
 }

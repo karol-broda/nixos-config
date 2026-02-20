@@ -80,25 +80,18 @@ Item {
 
     PanelOutline {
         panels: [
-            volumeDrawer._panelRect,
-            batteryDrawer._panelRect
+            volumeDrawer.panelRect,
+            batteryDrawer.panelRect
         ]
-        frameBottom: root.height - Spacing.frameWidth
+        frameBottom: root.height - Spacing.panelSideInset
     }
 
     EdgeDrawer {
         id: volumeDrawer
 
-        readonly property var _panelRect: ({
-            x: volumeDrawer.x,
-            y: volumeDrawer.y,
-            w: volumeDrawer.width,
-            h: volumeDrawer.height
-        })
-
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: Spacing.frameWidth
+        anchors.bottomMargin: Spacing.panelSideInset
 
         edge: "bottom"
         open: root.osdType === "volume" || root.osdType === "brightness"
@@ -180,16 +173,9 @@ Item {
     EdgeDrawer {
         id: batteryDrawer
 
-        readonly property var _panelRect: ({
-            x: batteryDrawer.x,
-            y: batteryDrawer.y,
-            w: batteryDrawer.width,
-            h: batteryDrawer.height
-        })
-
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: Spacing.frameWidth
+        anchors.bottomMargin: Spacing.panelSideInset
 
         edge: "bottom"
         open: root.osdType === "battery"

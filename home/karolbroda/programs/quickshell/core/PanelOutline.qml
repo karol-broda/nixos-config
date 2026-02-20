@@ -47,18 +47,32 @@ Shape {
         })
     }
 
-    // shape fills the parent; path coordinates are in parent's coordinate space
+    readonly property string _svgPath: Outline.toSvgString(root._pathData)
+    readonly property bool _hasContent: _pathData.length > 0
+
     anchors.fill: parent
-    visible: _pathData.length > 0
+
+    // smooth fade instead of hard visibility toggle
+    opacity: _hasContent ? 1 : 0
+    visible: opacity > 0.01
+
+    Behavior on opacity {
+        NumberAnimation {
+            duration: Motion.durationFast
+            easing.type: Easing.BezierSpline
+            easing.bezierCurve: Motion.curveEnter
+        }
+    }
 
     preferredRendererType: Shape.CurveRenderer
 
     ShapePath {
         strokeWidth: -1
-        fillColor: root.visible ? root.fillColor : "transparent"
+        fillColor: root.fillColor
 
         PathSvg {
-            path: Outline.toSvgString(root._pathData)
+            path: root._svgPath
         }
     }
+
 }
