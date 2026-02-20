@@ -14,6 +14,11 @@
       "1password"
       "1password-cli"
       "sol"
+      "roblox"
+      "robloxstudio"
+      "steam"
+      "whisky"
+      "autodesk-fusion"
     ];
 
     masApps = {
