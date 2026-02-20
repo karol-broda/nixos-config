@@ -50,7 +50,6 @@
 
       export DO_NOT_TRACK=1
       export EDITOR="nvim"
-
       _direnv_hook() {
         emulate -L zsh
         local old_fpath="$fpath"

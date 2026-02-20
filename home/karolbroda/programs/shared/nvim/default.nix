@@ -23,62 +23,65 @@
       enable = true;
       settings = {
         flavour = "frappe";
-        background = {
-          light = "latte";
-          dark = "frappe";
-        };
         transparent_background = true;
-        show_end_of_buffer = false;
         term_colors = true;
-        dim_inactive = {
-          enabled = false;
-          shade = "dark";
-          percentage = 0.15;
-        };
-        no_italic = false;
-        no_bold = false;
-        no_underline = false;
         styles = {
           comments = ["italic"];
           conditionals = ["italic"];
-          loops = [];
-          functions = [];
-          keywords = [];
-          strings = [];
-          variables = [];
-          numbers = [];
-          booleans = [];
-          properties = [];
-          types = [];
-          operators = [];
         };
-        color_overrides = {};
-        custom_highlights = {};
         default_integrations = true;
         integrations = {
-          cmp = true;
+          avante = true;
+          blink_cmp = true;
+          diffview = true;
+          fidget = true;
+          flash = true;
           gitsigns = true;
+          illuminate.enabled = true;
+          indent_blankline.enabled = true;
+          mini.enabled = true;
+          noice = true;
+          notify = true;
           nvimtree = true;
+          render_markdown = true;
+          telescope.enabled = true;
           treesitter = true;
-          notify = false;
-          mini = {
-            enabled = true;
-            indentscope_color = "";
-          };
-          alpha = true;
-          bufferline = true;
-          indent_blankline = {
-            enabled = true;
-            scope_color = "";
-            colored_indent_levels = false;
-          };
-          telescope = {
-            enabled = true;
-          };
           treesitter_context = true;
-          trouble = false;
+          trouble = true;
           which_key = true;
         };
+        # force transparency on panels that catppuccin doesn't clear by default
+        # cause of transparent background
+        custom_highlights.__raw = ''
+          function(colors)
+            return {
+              NormalFloat = { bg = "NONE" },
+              FloatBorder = { bg = "NONE" },
+              FloatTitle = { bg = "NONE" },
+              NvimTreeNormal = { bg = "NONE" },
+              NvimTreeNormalNC = { bg = "NONE" },
+              NvimTreeEndOfBuffer = { bg = "NONE" },
+              NvimTreeWinSeparator = { bg = "NONE", fg = colors.surface0 },
+              TelescopeNormal = { bg = "NONE" },
+              TelescopeBorder = { bg = "NONE" },
+              TelescopePromptNormal = { bg = "NONE" },
+              TelescopePromptBorder = { bg = "NONE" },
+              TelescopeResultsNormal = { bg = "NONE" },
+              TelescopeResultsBorder = { bg = "NONE" },
+              TelescopePreviewNormal = { bg = "NONE" },
+              TelescopePreviewBorder = { bg = "NONE" },
+              WhichKeyFloat = { bg = "NONE" },
+              TreesitterContext = { bg = "NONE" },
+              TroubleNormal = { bg = "NONE" },
+              NoiceCmdlinePopup = { bg = "NONE" },
+              NoiceCmdlinePopupBorder = { bg = "NONE" },
+              AvanteNormal = { bg = "NONE" },
+              AvanteSidebar = { bg = "NONE" },
+              AvanteSidebarNormal = { bg = "NONE" },
+              AvanteInput = { bg = "NONE" },
+            }
+          end
+        '';
       };
     };
 
@@ -88,17 +91,21 @@
     };
 
     extraPackages = with pkgs; [
+      ripgrep
+      fd
+      git
+      curl
+      tree-sitter
+
+      # formatters (referenced by conform-nvim)
       stylua
       nixpkgs-fmt
       prettier
       black
       isort
       rustfmt
-      ripgrep
-      fd
-      git
-      curl
-      tree-sitter
+      shfmt
+      gofumpt
     ];
   };
 }

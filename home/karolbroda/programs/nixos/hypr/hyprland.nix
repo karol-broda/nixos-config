@@ -1,4 +1,4 @@
-{...}: {
+{ ... }: {
   wayland.windowManager.hyprland = {
     enable = true;
     settings = {
@@ -292,7 +292,6 @@
 
       windowrule = [
         "match:class .*, suppress_event maximize"
-        "match:class .*, suppress_event fullscreen"
         "match:class ^$, match:title ^$, match:xwayland true, match:float true, match:fullscreen false, no_initial_focus on"
         "match:class ^(pavucontrol)$, float on"
         "match:title ^(Picture-in-Picture)$, float on"
