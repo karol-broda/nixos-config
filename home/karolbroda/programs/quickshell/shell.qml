@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Hyprland
 
@@ -20,7 +21,26 @@ import qs.features.screenshot
 ShellRoot {
     id: root
 
+    // nix symlinks to the store cause spurious inotify events,
+    // so disable file watching by default and only enable it
+    // when running outside of a systemd service (i.e. development)
+    Quickshell.watchFiles: false
+
+    Process {
+        id: devModeCheck
+        command: ["sh", "-c", "test -z \"$INVOCATION_ID\" && echo dev"]
+
+        stdout: SplitParser {
+            onRead: function(data) {
+                if (data.trim() === "dev") {
+                    Quickshell.watchFiles = true
+                }
+            }
+        }
+    }
+
     Component.onCompleted: {
+        devModeCheck.running = true
         console.log("Shell loaded")
     }
 
