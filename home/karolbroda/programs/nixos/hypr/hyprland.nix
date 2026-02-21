@@ -1,6 +1,8 @@
 {...}: {
   wayland.windowManager.hyprland = {
     enable = true;
+    package = null;
+    portalPackage = null;
     settings = {
       "$rosewater" = "rgb(dc8a78)";
       "$rosewaterAlpha" = "dc8a78";

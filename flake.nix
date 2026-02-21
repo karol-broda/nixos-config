@@ -18,6 +18,8 @@
     };
 
     hyprland.url = "github:hyprwm/Hyprland";
+    hyprlock.url = "github:hyprwm/hyprlock";
+    hyprpaper.url = "github:hyprwm/hyprpaper";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";

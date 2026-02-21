@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{pkgs, elephant-wallpaper-provider, ...}: {
   programs = {
     quickshell = {
       enable = true;
@@ -31,6 +31,11 @@
         "windows"
       ];
     };
+  };
+
+  xdg.configFile."elephant/providers/wallpaper.so" = {
+    source = "${elephant-wallpaper-provider}/lib/elephant/providers/wallpaper.so";
+    force = true;
   };
 
   home.packages = with pkgs; [

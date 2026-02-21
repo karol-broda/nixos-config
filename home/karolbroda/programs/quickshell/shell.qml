@@ -21,17 +21,13 @@ import qs.features.screenshot
 ShellRoot {
     id: root
 
-    // nix symlinks to the store cause spurious inotify events,
-    // so disable file watching by default and only enable it
-    // when running outside of a systemd service (i.e. development)
-    Quickshell.watchFiles: false
-
     Process {
         id: devModeCheck
         command: ["sh", "-c", "test -z \"$INVOCATION_ID\" && echo dev"]
 
         stdout: SplitParser {
             onRead: function(data) {
+                console.log({data: data.trim()})
                 if (data.trim() === "dev") {
                     Quickshell.watchFiles = true
                 }
@@ -40,6 +36,10 @@ ShellRoot {
     }
 
     Component.onCompleted: {
+        // nix symlinks to the store cause spurious inotify events,
+        // so disable file watching by default and only enable it
+        // when running outside of a systemd service (i.e. development)
+        Quickshell.watchFiles = false
         devModeCheck.running = true
         console.log("Shell loaded")
     }

@@ -8,14 +8,40 @@
   ...
 }: let
   inherit (inputs.self.lib.personal) builders;
+  system = "x86_64-linux";
+  pkgs-hypr = {
+    inherit (inputs.hyprland.packages.${system}) hyprland xdg-desktop-portal-hyprland;
+    inherit (inputs.hyprlock.packages.${system}) hyprlock;
+    inherit (inputs.hyprpaper.packages.${system}) hyprpaper;
+  };
+  elephant-wallpaper-provider = inputs.elephant.packages.${system}.elephant-providers.overrideAttrs {
+    pname = "elephant-wallpaper-provider";
+
+    preBuild = ''
+      cp -r ${../../providers/wallpaper} ./internal/providers/wallpaper
+    '';
+
+    buildPhase = ''
+      runHook preBuild
+      go build -buildmode=plugin -o wallpaper.so ./internal/providers/wallpaper
+      runHook postBuild
+    '';
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/lib/elephant/providers
+      cp wallpaper.so $out/lib/elephant/providers/
+      runHook postInstall
+    '';
+  };
 in {
   flake.nixosConfigurations.nixos = builders.mkNixosHost {
     hostname = "nixos";
-    system = "x86_64-linux";
+    inherit system;
     specialArgs = {
-      inherit username;
-      pkgs-unstable = mkPkgsUnstable "x86_64-linux";
-      pkgs-old-working = mkPkgsOldWorking "x86_64-linux";
+      inherit username pkgs-hypr;
+      pkgs-unstable = mkPkgsUnstable system;
+      pkgs-old-working = mkPkgsOldWorking system;
     };
     overlays =
       commonOverlays
@@ -40,8 +66,8 @@ in {
       ];
     homeUsers.${username} = import ../../home/karolbroda/nixos.nix;
     homeSpecialArgs = {
-      inherit username;
-      pkgs-unstable = mkPkgsUnstable "x86_64-linux";
+      inherit username pkgs-hypr elephant-wallpaper-provider;
+      pkgs-unstable = mkPkgsUnstable system;
     };
   };
 }

@@ -17,5 +17,4 @@ singleton Requests Requests.qml
 singleton SystemUsage SystemUsage.qml
 singleton Time Time.qml
 singleton Tray Tray.qml
-singleton Wallpapers Wallpapers.qml
 singleton Weather Weather.qml

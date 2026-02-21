@@ -34,6 +34,8 @@ Singleton {
         ">web ": "websearch",
         ">search ": "websearch",
         ">s ": "websearch",
+        ">wall ": "wallpaper",
+        ">wallpaper ": "wallpaper",
         ">wall": "wallpaper",
         ">wallpaper": "wallpaper"
     })
@@ -73,8 +75,6 @@ Singleton {
         }
     })
 
-    readonly property bool isWallpaperMode: root.activeProvider === "wallpaper"
-
     signal resultsReady
 
     function query(searchText: string): void {
@@ -94,12 +94,6 @@ Singleton {
         }
 
         root.activeProvider = provider
-
-        if (provider === "wallpaper") {
-            root.searchWallpapers(actualQuery)
-            return
-        }
-
         root.currentQuery = actualQuery
         root.pendingProvider = provider !== "" ? provider : "desktopapplications"
         root.pendingSearchText = actualQuery
@@ -119,7 +113,11 @@ Singleton {
             return
         }
 
-        const activationStr = provider + ";" + identifier + ";start;;"
+        const actions = item.actions
+        const action = (actions !== null && actions !== undefined && actions.length > 0)
+            ? actions[0]
+            : ""
+        const activationStr = provider + ";" + identifier + ";" + action + ";;"
         activateProc.command = ["elephant", "activate", activationStr]
         activateProc.running = true
     }
@@ -222,51 +220,6 @@ Singleton {
             }
         }
         return false
-    }
-
-    function searchWallpapers(searchText: string): void {
-        const wallpapers = Wallpapers.list
-        if (wallpapers === null || wallpapers === undefined || wallpapers.length === 0) {
-            root.results = []
-            root.resultsReady()
-            return
-        }
-
-        const query = searchText.toLowerCase()
-        const items = []
-
-        for (let i = 0; i < wallpapers.length && items.length < root.queryLimit; i++) {
-            const path = wallpapers[i]
-            if (path === null || path === undefined) continue
-
-            const filename = path.split("/").pop() || path
-            const name = filename.replace(/\.[^.]+$/, "").replace(/[-_]/g, " ")
-
-            if (query === "" || filename.toLowerCase().includes(query) || name.toLowerCase().includes(query)) {
-                items.push({
-                    label: name,
-                    sublabel: path,
-                    icon: "",
-                    identifier: path,
-                    provider: "wallpaper",
-                    providerIcon: "image",
-                    providerLabel: "Wallpaper",
-                    score: query === "" ? i : (name.toLowerCase().startsWith(query) ? 100 : 50),
-                    actions: [],
-                    isWallpaper: true,
-                    wallpaperPath: path
-                })
-            }
-        }
-
-        items.sort((a, b) => b.score - a.score)
-        root.results = items
-        root.resultsReady()
-    }
-
-    function activateWallpaper(path: string): void {
-        if (path === null || path === undefined || path === "") return
-        Wallpapers.setWallpaper(path)
     }
 
     Component.onCompleted: {

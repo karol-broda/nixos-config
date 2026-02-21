@@ -40,12 +40,7 @@ Item {
 
     function activateSelected() {
         if (results.length > 0 && selectedIndex >= 0 && selectedIndex < results.length) {
-            const item = results[selectedIndex]
-            if (item.isWallpaper === true && item.wallpaperPath !== null && item.wallpaperPath !== undefined) {
-                Elephant.activateWallpaper(item.wallpaperPath)
-            } else {
-                Elephant.activate(item)
-            }
+            Elephant.activate(results[selectedIndex])
             return true
         }
         return false

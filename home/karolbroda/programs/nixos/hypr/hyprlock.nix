@@ -1,6 +1,7 @@
-{...}: {
+{pkgs-hypr, ...}: {
   programs.hyprlock = {
     enable = true;
+    package = pkgs-hypr.hyprlock;
 
     settings = {
       "$base" = "rgb(303446)";

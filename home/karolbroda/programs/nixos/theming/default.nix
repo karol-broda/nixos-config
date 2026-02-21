@@ -2,12 +2,6 @@
   xdg = {
     enable = true;
 
-    portal = {
-      enable = true;
-      extraPortals = [pkgs.xdg-desktop-portal-hyprland];
-      config.common.default = ["hyprland" "gtk"];
-    };
-
     configFile."Kvantum/kvantum.kvconfig".text = ''
       [General]
       theme=catppuccin-frappe-lavender

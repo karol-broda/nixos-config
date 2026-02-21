@@ -3,7 +3,7 @@
   lib,
   pkgs,
   pkgs-unstable,
-  inputs,
+  pkgs-hypr,
   ...
 }: let
   inherit (lib) mkIf mkEnableOption;
@@ -16,14 +16,14 @@ in {
   config = mkIf cfg.enable {
     programs.hyprland = {
       enable = true;
-      package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-      portalPackage =
-        inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+      package = pkgs-hypr.hyprland;
+      portalPackage = pkgs-hypr.xdg-desktop-portal-hyprland;
     };
 
     xdg.portal = {
       enable = true;
       extraPortals = [pkgs.xdg-desktop-portal-gtk];
+      config.common.default = ["hyprland" "gtk"];
     };
 
     services = {
@@ -53,7 +53,8 @@ in {
     security.polkit.enable = true;
 
     nix.settings = {
-      substituters = ["https://hyprland.cachix.org?priority=41"];
+      substituters = ["https://hyprland.cachix.org"];
+      trusted-substituters = ["https://hyprland.cachix.org"];
       trusted-public-keys = ["hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="];
     };
   };

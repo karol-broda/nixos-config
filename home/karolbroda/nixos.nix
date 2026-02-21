@@ -2,6 +2,7 @@
   pkgs,
   pkgs-unstable,
   inputs,
+  pkgs-hypr,
   username,
   ...
 }: let
@@ -36,7 +37,6 @@ in {
     packages = with pkgs; [
       fastfetch
       htop
-      hyprlock
       pkgs-unstable.app2unit
 
       kdePackages.kconfig
