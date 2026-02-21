@@ -2,7 +2,7 @@
   imports = [
     ./hypr
     ./rofi.nix
-    ./quickshell.nix
+    ../quickshell
     ./media.nix
     ./theming
     ./disks.nix

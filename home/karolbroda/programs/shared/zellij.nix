@@ -1,4 +1,8 @@
-{pkgs, pkgs-unstable, ...}: let
+{
+  pkgs,
+  pkgs-unstable,
+  ...
+}: let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   copyCmd =
     if isDarwin

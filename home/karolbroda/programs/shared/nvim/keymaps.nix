@@ -1,8 +1,10 @@
-{...}:
-let
+{...}: let
   map = mode: key: action: desc: {
     inherit mode key action;
-    options = {desc = desc; silent = true;};
+    options = {
+      desc = desc;
+      silent = true;
+    };
   };
 
   nmap = map "n";
@@ -12,12 +14,20 @@ let
 
   remap = mode: key: action: desc: {
     inherit mode key action;
-    options = {desc = desc; silent = true; remap = true;};
+    options = {
+      desc = desc;
+      silent = true;
+      remap = true;
+    };
   };
 
   expr = mode: key: action: desc: {
     inherit mode key action;
-    options = {desc = desc; silent = true; expr = true;};
+    options = {
+      desc = desc;
+      silent = true;
+      expr = true;
+    };
   };
 in {
   programs.nixvim.keymaps = [

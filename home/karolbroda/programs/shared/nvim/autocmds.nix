@@ -1,5 +1,4 @@
-{...}:
-let
+{...}: let
   # shorthand for the verbose autocmd shape
   autocmd = event: pattern: desc: callback: {
     inherit event pattern desc;
@@ -34,21 +33,41 @@ in {
       '')
 
       (ftAutocmd [
-        "PlenaryTestPopup" "OverseerForm" "OverseerList" "checkhealth"
-        "dbout" "floggraph" "fugitive" "git" "gitsigns.blame"
-        "help" "lspinfo" "man" "neotest-output" "neotest-output-panel"
-        "neotest-summary" "notify" "noice" "qf" "query"
-        "spectre_panel" "startuptime" "toggleterm" "tsplayground" "vim"
-      ] "close special filetypes with <q>" ''
-        function(event)
-          vim.bo[event.buf].buflisted = false
-          vim.keymap.set("n", "q", "<cmd>close<cr>", {
-            buffer = event.buf, silent = true, desc = "quit buffer",
-          })
-        end
-      '')
+          "PlenaryTestPopup"
+          "OverseerForm"
+          "OverseerList"
+          "checkhealth"
+          "dbout"
+          "floggraph"
+          "fugitive"
+          "git"
+          "gitsigns.blame"
+          "help"
+          "lspinfo"
+          "man"
+          "neotest-output"
+          "neotest-output-panel"
+          "neotest-summary"
+          "notify"
+          "noice"
+          "qf"
+          "query"
+          "spectre_panel"
+          "startuptime"
+          "toggleterm"
+          "tsplayground"
+          "vim"
+        ] "close special filetypes with <q>" ''
+          function(event)
+            vim.bo[event.buf].buflisted = false
+            vim.keymap.set("n", "q", "<cmd>close<cr>", {
+              buffer = event.buf, silent = true, desc = "quit buffer",
+            })
+          end
+        '')
 
-      (ftAutocmd ["gitcommit" "markdown" "text" "tex" "typst"]
+      (
+        ftAutocmd ["gitcommit" "markdown" "text" "tex" "typst"]
         "wrap and spell in text filetypes" ''
           function()
             vim.opt_local.wrap = true
@@ -57,7 +76,8 @@ in {
         ''
       )
 
-      (ftAutocmd ["json" "jsonc" "json5"]
+      (
+        ftAutocmd ["json" "jsonc" "json5"]
         "fix conceallevel for json" ''
           function()
             vim.opt_local.conceallevel = 0
@@ -75,7 +95,8 @@ in {
         end
       '')
 
-      (autocmd ["FocusGained" "TermClose" "TermLeave"] "*"
+      (
+        autocmd ["FocusGained" "TermClose" "TermLeave"] "*"
         "reload file when changed on disk" ''
           function()
             if vim.o.buftype ~= "nofile" then
@@ -125,7 +146,8 @@ in {
         function() vim.opt.hlsearch = false end
       '')
 
-      (ftAutocmd ["gitcommit" "gitrebase"]
+      (
+        ftAutocmd ["gitcommit" "gitrebase"]
         "start git messages in insert mode" ''
           function() vim.cmd("startinsert!") end
         ''
@@ -152,7 +174,8 @@ in {
         function() vim.opt.paste = false end
       '')
 
-      (autocmd ["BufRead" "BufNewFile"] ["*/node_modules/*"]
+      (
+        autocmd ["BufRead" "BufNewFile"] ["*/node_modules/*"]
         "disable diagnostics in node_modules" ''
           function() vim.diagnostic.disable(0) end
         ''

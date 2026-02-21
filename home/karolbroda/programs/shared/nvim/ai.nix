@@ -66,23 +66,78 @@
 
     keymaps = [
       # sidebar
-      {mode = "n"; key = "<leader>aa"; action = "<cmd>AvanteToggle<cr>"; options.desc = "toggle avante sidebar";}
-      {mode = "n"; key = "<leader>ar"; action = "<cmd>AvanteRefresh<cr>"; options.desc = "refresh avante";}
-      {mode = "n"; key = "<leader>aR"; action = "<cmd>AvanteClear<cr>"; options.desc = "clear avante chat";}
+      {
+        mode = "n";
+        key = "<leader>aa";
+        action = "<cmd>AvanteToggle<cr>";
+        options.desc = "toggle avante sidebar";
+      }
+      {
+        mode = "n";
+        key = "<leader>ar";
+        action = "<cmd>AvanteRefresh<cr>";
+        options.desc = "refresh avante";
+      }
+      {
+        mode = "n";
+        key = "<leader>aR";
+        action = "<cmd>AvanteClear<cr>";
+        options.desc = "clear avante chat";
+      }
 
       # ask / edit
-      {mode = ["n" "v"]; key = "<leader>ae"; action = "<cmd>AvanteEdit<cr>"; options.desc = "ai edit";}
-      {mode = ["n" "v"]; key = "<leader>ac"; action = "<cmd>AvanteAsk<cr>"; options.desc = "ai ask";}
+      {
+        mode = ["n" "v"];
+        key = "<leader>ae";
+        action = "<cmd>AvanteEdit<cr>";
+        options.desc = "ai edit";
+      }
+      {
+        mode = ["n" "v"];
+        key = "<leader>ac";
+        action = "<cmd>AvanteAsk<cr>";
+        options.desc = "ai ask";
+      }
 
       # quick actions
-      {mode = "v"; key = "<leader>af"; action = "<cmd>AvanteFix<cr>"; options.desc = "ai fix selection";}
-      {mode = "v"; key = "<leader>ax"; action = "<cmd>AvanteExplain<cr>"; options.desc = "ai explain selection";}
-      {mode = "v"; key = "<leader>at"; action = "<cmd>AvanteTests<cr>"; options.desc = "ai generate tests";}
-      {mode = "v"; key = "<leader>ad"; action = "<cmd>AvanteDocs<cr>"; options.desc = "ai add docs";}
+      {
+        mode = "v";
+        key = "<leader>af";
+        action = "<cmd>AvanteFix<cr>";
+        options.desc = "ai fix selection";
+      }
+      {
+        mode = "v";
+        key = "<leader>ax";
+        action = "<cmd>AvanteExplain<cr>";
+        options.desc = "ai explain selection";
+      }
+      {
+        mode = "v";
+        key = "<leader>at";
+        action = "<cmd>AvanteTests<cr>";
+        options.desc = "ai generate tests";
+      }
+      {
+        mode = "v";
+        key = "<leader>ad";
+        action = "<cmd>AvanteDocs<cr>";
+        options.desc = "ai add docs";
+      }
 
       # diff navigation
-      {mode = "n"; key = "]a"; action.__raw = "function() require('avante.diff').goto_next() end"; options.desc = "next ai diff";}
-      {mode = "n"; key = "[a"; action.__raw = "function() require('avante.diff').goto_prev() end"; options.desc = "prev ai diff";}
+      {
+        mode = "n";
+        key = "]a";
+        action.__raw = "function() require('avante.diff').goto_next() end";
+        options.desc = "next ai diff";
+      }
+      {
+        mode = "n";
+        key = "[a";
+        action.__raw = "function() require('avante.diff').goto_prev() end";
+        options.desc = "prev ai diff";
+      }
     ];
   };
 }

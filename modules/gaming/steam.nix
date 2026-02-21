@@ -6,7 +6,7 @@
 }: let
   inherit (lib) mkIf mkEnableOption mkOption types;
 in {
-  options.gaming.steam = {
+  options.personal.gaming.steam = {
     enable = mkEnableOption "steam gaming platform";
 
     openFirewalls = mkOption {
@@ -28,22 +28,22 @@ in {
     };
   };
 
-  config = mkIf config.gaming.steam.enable {
+  config = mkIf config.personal.gaming.steam.enable {
     programs.steam = {
       enable = true;
-      remotePlay.openFirewall = config.gaming.steam.openFirewalls;
-      dedicatedServer.openFirewall = config.gaming.steam.openFirewalls;
-      localNetworkGameTransfers.openFirewall = config.gaming.steam.openFirewalls;
-
-      extraCompatPackages = config.gaming.steam.extraCompatPackages;
-      protontricks.enable = config.gaming.steam.enableProtontricks;
+      remotePlay.openFirewall = config.personal.gaming.steam.openFirewalls;
+      dedicatedServer.openFirewall = config.personal.gaming.steam.openFirewalls;
+      localNetworkGameTransfers.openFirewall = config.personal.gaming.steam.openFirewalls;
+      extraCompatPackages = config.personal.gaming.steam.extraCompatPackages;
+      protontricks.enable = config.personal.gaming.steam.enableProtontricks;
     };
 
-    hardware.graphics = {
-      enable = true;
-      enable32Bit = true;
+    hardware = {
+      graphics = {
+        enable = true;
+        enable32Bit = true;
+      };
+      steam-hardware.enable = true;
     };
-
-    hardware.steam-hardware.enable = true;
   };
 }

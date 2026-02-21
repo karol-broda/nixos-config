@@ -23,55 +23,61 @@ in {
     ./ai-zed.nix
   ];
 
-  home.sessionPath = ["$HOME/.local/bin"];
+  home = {
+    sessionPath = ["$HOME/.local/bin"];
 
-  home.packages = [
-    llm-agents.claude-code
-    # llm-agents.openskills  # hash mismatch in upstream flake
-    # inputs.workmux.packages.${pkgs.stdenv.hostPlatform.system}.default  # shell completion build failure upstream
-    mcp-servers.mcp-server-fetch
-    mcp-servers.mcp-server-filesystem
-    pkgs.fabric-ai
-  ];
+    packages = [
+      llm-agents.claude-code
+      # llm-agents.openskills  # hash mismatch in upstream flake
+      # inputs.workmux.packages.${pkgs.stdenv.hostPlatform.system}.default  # shell completion build failure upstream
+      mcp-servers.mcp-server-fetch
+      mcp-servers.mcp-server-filesystem
+      pkgs.fabric-ai
+    ];
 
-  home.file.".claude/settings.json".text = builtins.toJSON {
-    mcpServers = {
-      filesystem = {
-        command = "mcp-server-filesystem";
-        args = [];
+    file = {
+      ".claude/settings.json".text = builtins.toJSON {
+        mcpServers = {
+          filesystem = {
+            command = "mcp-server-filesystem";
+            args = [];
+          };
+          fetch = {
+            command = "mcp-server-fetch";
+            args = [];
+          };
+        };
       };
-      fetch = {
-        command = "mcp-server-fetch";
-        args = [];
+
+      ".local/bin/vibe" = {
+        executable = true;
+        text = ''
+          #!/usr/bin/env bash
+          set -e
+          BRANCH="''${1:-$(git branch --show-current)-ai}"
+          ROOT=$(git rev-parse --show-toplevel)
+          TREES_DIR="$ROOT/.trees"
+          WORKTREE="$TREES_DIR/$BRANCH"
+
+          mkdir -p "$TREES_DIR"
+
+          if [ ! -d "$WORKTREE" ]; then
+            git worktree add -b "$BRANCH" "$WORKTREE" HEAD 2>/dev/null || \
+            git worktree add "$WORKTREE" "$BRANCH"
+          fi
+
+          cd "$WORKTREE"
+          if [ -f .envrc ]; then
+            direnv allow
+          fi
+          claude
+        '';
       };
     };
   };
 
-  home.file.".local/bin/vibe" = {
-    executable = true;
-    text = ''
-      #!/usr/bin/env bash
-      set -e
-      BRANCH="''${1:-$(git branch --show-current)-ai}"
-      ROOT=$(git rev-parse --show-toplevel)
-      TREES_DIR="$ROOT/.trees"
-      WORKTREE="$TREES_DIR/$BRANCH"
-
-      mkdir -p "$TREES_DIR"
-
-      if [ ! -d "$WORKTREE" ]; then
-        git worktree add -b "$BRANCH" "$WORKTREE" HEAD 2>/dev/null || \
-        git worktree add "$WORKTREE" "$BRANCH"
-      fi
-
-      cd "$WORKTREE"
-      if [ -f .envrc ]; then
-        direnv allow
-      fi
-      claude
-    '';
+  programs = {
+    zsh.initContent = wtsFunc;
+    bash.initExtra = wtsFunc;
   };
-
-  programs.zsh.initContent = wtsFunc;
-  programs.bash.initExtra = wtsFunc;
 }

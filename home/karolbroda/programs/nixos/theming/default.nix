@@ -1,10 +1,17 @@
 {pkgs, ...}: {
-  xdg.enable = true;
-
-  xdg.portal = {
+  xdg = {
     enable = true;
-    extraPortals = [pkgs.xdg-desktop-portal-hyprland];
-    config.common.default = ["hyprland" "gtk"];
+
+    portal = {
+      enable = true;
+      extraPortals = [pkgs.xdg-desktop-portal-hyprland];
+      config.common.default = ["hyprland" "gtk"];
+    };
+
+    configFile."Kvantum/kvantum.kvconfig".text = ''
+      [General]
+      theme=catppuccin-frappe-lavender
+    '';
   };
 
   gtk = {
@@ -33,11 +40,6 @@
       name = "kvantum";
     };
   };
-
-  xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
-    [General]
-    theme=catppuccin-frappe-lavender
-  '';
 
   home.pointerCursor = {
     name = "catppuccin-frappe-lavender-cursors";

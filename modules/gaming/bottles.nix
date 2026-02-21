@@ -6,6 +6,8 @@
 }: let
   inherit (lib) mkIf mkEnableOption mkOption types optional getExe;
 
+  cfg = config.personal.gaming.bottles;
+
   corePackages = with pkgs; [
     bottles
     wineWowPackages.staging
@@ -25,7 +27,7 @@
     exec ${getExe pkgs.gamemode} ${getExe pkgs.bottles} "$@"
   '';
 in {
-  options.gaming.bottles = {
+  options.personal.gaming.bottles = {
     enable = mkEnableOption "system-wide setup for bottles + wine";
 
     withGamescopeWrapper = mkOption {
@@ -47,7 +49,7 @@ in {
     };
   };
 
-  config = mkIf config.gaming.bottles.enable {
+  config = mkIf cfg.enable {
     services.udev.packages = [pkgs.game-devices-udev-rules];
 
     security.pam.loginLimits = [
@@ -76,12 +78,12 @@ in {
         VKD3D_DEBUG = "none";
         __GL_SHADER_DISK_CACHE = "1";
       }
-      // config.gaming.bottles.extraEnv;
+      // cfg.extraEnv;
 
     environment.systemPackages =
       corePackages
-      ++ config.gaming.bottles.extraPackages
-      ++ (optional config.gaming.bottles.withGamescopeWrapper bottlesGamemode);
+      ++ cfg.extraPackages
+      ++ (optional cfg.withGamescopeWrapper bottlesGamemode);
 
     programs.gamemode = {
       enable = true;

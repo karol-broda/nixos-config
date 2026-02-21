@@ -78,14 +78,20 @@
     plugins.lazydev = {
       enable = true;
       settings.library = [
-        {path = "luvit-meta/library"; words = ["vim%.uv"];}
+        {
+          path = "luvit-meta/library";
+          words = ["vim%.uv"];
+        }
       ];
     };
 
     plugins.conform-nvim = {
       enable = true;
       settings = {
-        format_on_save = {lsp_format = "fallback"; timeout_ms = 1000;};
+        format_on_save = {
+          lsp_format = "fallback";
+          timeout_ms = 1000;
+        };
         formatters_by_ft = {
           lua = ["stylua"];
           nix = ["nixpkgs_fmt"];
@@ -112,11 +118,36 @@
     };
 
     keymaps = [
-      {mode = ["n" "v"]; key = "<leader>cf"; action = "<cmd>lua require('conform').format({ lsp_format = 'fallback', async = false, timeout_ms = 1000 })<CR>"; options.desc = "format";}
-      {mode = "n"; key = "<leader>xx"; action = "<cmd>Trouble diagnostics toggle<cr>"; options.desc = "diagnostics (trouble)";}
-      {mode = "n"; key = "<leader>xX"; action = "<cmd>Trouble diagnostics toggle filter.buf=0<cr>"; options.desc = "buffer diagnostics (trouble)";}
-      {mode = "n"; key = "<leader>xL"; action = "<cmd>Trouble loclist toggle<cr>"; options.desc = "location list (trouble)";}
-      {mode = "n"; key = "<leader>xQ"; action = "<cmd>Trouble qflist toggle<cr>"; options.desc = "quickfix list (trouble)";}
+      {
+        mode = ["n" "v"];
+        key = "<leader>cf";
+        action = "<cmd>lua require('conform').format({ lsp_format = 'fallback', async = false, timeout_ms = 1000 })<CR>";
+        options.desc = "format";
+      }
+      {
+        mode = "n";
+        key = "<leader>xx";
+        action = "<cmd>Trouble diagnostics toggle<cr>";
+        options.desc = "diagnostics (trouble)";
+      }
+      {
+        mode = "n";
+        key = "<leader>xX";
+        action = "<cmd>Trouble diagnostics toggle filter.buf=0<cr>";
+        options.desc = "buffer diagnostics (trouble)";
+      }
+      {
+        mode = "n";
+        key = "<leader>xL";
+        action = "<cmd>Trouble loclist toggle<cr>";
+        options.desc = "location list (trouble)";
+      }
+      {
+        mode = "n";
+        key = "<leader>xQ";
+        action = "<cmd>Trouble qflist toggle<cr>";
+        options.desc = "quickfix list (trouble)";
+      }
     ];
   };
 }

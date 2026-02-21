@@ -29,8 +29,10 @@
     imageTypes
   );
 in {
-  xdg.mimeApps.defaultApplications = defaultApps;
-  xdg.configFile."mimeapps.list".force = true;
+  xdg = {
+    mimeApps.defaultApplications = defaultApps;
+    configFile."mimeapps.list".force = true;
+  };
 
   programs.swayimg = {
     enable = true;

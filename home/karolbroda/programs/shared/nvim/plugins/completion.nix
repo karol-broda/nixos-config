@@ -37,7 +37,11 @@
               treesitter = ["lsp"];
               columns = [
                 {__unkeyed-1 = "kind_icon";}
-                {__unkeyed-1 = "label"; __unkeyed-2 = "label_description"; gap = 1;}
+                {
+                  __unkeyed-1 = "label";
+                  __unkeyed-2 = "label_description";
+                  gap = 1;
+                }
                 {__unkeyed-1 = "source_name";}
               ];
             };
@@ -69,10 +73,12 @@
         enable_autosnippets = true;
         store_selection_keys = "<Tab>";
       };
-      fromVscode = [{
-        lazyLoad = true;
-        paths = "${pkgs.vimPlugins.friendly-snippets}";
-      }];
+      fromVscode = [
+        {
+          lazyLoad = true;
+          paths = "${pkgs.vimPlugins.friendly-snippets}";
+        }
+      ];
     };
   };
 }

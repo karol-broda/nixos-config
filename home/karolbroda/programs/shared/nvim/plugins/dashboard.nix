@@ -1,5 +1,4 @@
-{...}:
-let
+{...}: let
   button = key: icon: label: action: shortcut: {
     type = "button";
     val = "${icon}  ${label}";
@@ -18,7 +17,10 @@ in {
   programs.nixvim.plugins.alpha = {
     enable = true;
     settings.layout = [
-      {type = "padding"; val = 2;}
+      {
+        type = "padding";
+        val = 2;
+      }
       {
         type = "text";
         val = [
@@ -36,7 +38,10 @@ in {
           ""
           "                   · neovim ·                   "
         ];
-        opts = {position = "center"; hl = "String";};
+        opts = {
+          position = "center";
+          hl = "String";
+        };
       }
       {
         type = "text";
@@ -54,9 +59,15 @@ in {
             return { "- " .. taglines[math.random(#taglines)] .. " -" }
           end)()
         '';
-        opts = {position = "center"; hl = "String";};
+        opts = {
+          position = "center";
+          hl = "String";
+        };
       }
-      {type = "padding"; val = 1;}
+      {
+        type = "padding";
+        val = 1;
+      }
       {
         type = "text";
         val.__raw = ''
@@ -72,9 +83,15 @@ in {
             return { "  " .. quotes[math.random(#quotes)] }
           end)()
         '';
-        opts = {position = "center"; hl = "Comment";};
+        opts = {
+          position = "center";
+          hl = "Comment";
+        };
       }
-      {type = "padding"; val = 2;}
+      {
+        type = "padding";
+        val = 2;
+      }
       {
         type = "group";
         val = [
@@ -101,7 +118,10 @@ in {
             "SPC q q")
         ];
       }
-      {type = "padding"; val = 1;}
+      {
+        type = "padding";
+        val = 1;
+      }
     ];
   };
 }
