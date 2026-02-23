@@ -34,7 +34,7 @@ type Config struct {
 	common.Config `koanf:",squash"`
 	Directory     string   `koanf:"directory" desc:"wallpaper directory path" default:"~/Pictures/Wallpapers"`
 	Extensions    []string `koanf:"extensions" desc:"supported image file extensions"`
-	SetCommand    string   `koanf:"set_command" desc:"shell command to set wallpaper, use %FILE% as placeholder" default:"hyprctl hyprpaper preload %FILE% && hyprctl hyprpaper wallpaper ,%FILE%"`
+	SetCommand    string   `koanf:"set_command" desc:"shell command to set wallpaper, use %FILE% as placeholder" default:"hyprctl hyprpaper wallpaper ',%FILE%'"`
 	Recursive     bool     `koanf:"recursive" desc:"search directory recursively" default:"true"`
 }
 
@@ -66,7 +66,7 @@ func Setup() {
 		},
 		Directory:  "~/Pictures/Wallpapers",
 		Extensions: []string{".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"},
-		SetCommand: "hyprctl hyprpaper preload %FILE% && hyprctl hyprpaper wallpaper ,%FILE%",
+		SetCommand: "hyprctl hyprpaper wallpaper ',%FILE%'",
 		Recursive:  true,
 	}
 

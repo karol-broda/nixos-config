@@ -45,7 +45,7 @@ Singleton {
     readonly property int panelGap: 8
 
     readonly property int frameWidth: 6
-    readonly property int frameRadius: 16
+    readonly property int frameRadius: 12
     readonly property int frameInnerRadius: 12
 
     readonly property real panelCurvature: 0.552

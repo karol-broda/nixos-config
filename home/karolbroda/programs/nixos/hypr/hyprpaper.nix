@@ -2,9 +2,12 @@
   home.packages = [pkgs-hypr.hyprpaper];
 
   xdg.configFile."hypr/hyprpaper.conf".text = ''
-    ipc = on
+    ipc = true
     splash = false
-    preload = ~/Pictures/Wallpapers/angel.jpg
-    wallpaper = , ~/Pictures/Wallpapers/angel.jpg
+
+    wallpaper {
+      monitor =
+      path = ~/Pictures/Wallpapers/angel.jpg
+    }
   '';
 }

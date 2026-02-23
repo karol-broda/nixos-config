@@ -38,6 +38,10 @@
     force = true;
   };
 
+  xdg.configFile."elephant/wallpaper.toml".text = ''
+    set_command = "hyprctl hyprpaper wallpaper ',%FILE%'"
+  '';
+
   home.packages = with pkgs; [
     kdePackages.qtwayland
     kdePackages.qtsvg

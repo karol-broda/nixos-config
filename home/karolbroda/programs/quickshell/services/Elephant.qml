@@ -159,7 +159,9 @@ Singleton {
                         providerIcon: provIcon,
                         providerLabel: provLabel,
                         score: item.score || 0,
-                        actions: item.actions || []
+                        actions: item.actions || [],
+                        preview: item.preview || "",
+                        previewType: item.preview_type || ""
                     })
                 }
             } catch (e) {

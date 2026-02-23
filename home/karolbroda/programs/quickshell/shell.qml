@@ -124,8 +124,8 @@ ShellRoot {
                     right: true
                 }
 
-                // explicit height for exclusive zone to work
-                exclusiveZone: Spacing.barHeight + Spacing.frameWidth
+                exclusiveZone: Spacing.barHeight + Spacing.frameWidth - 5
+                height: Spacing.barHeight
 
                 Bar {
                     anchors.top: parent.top

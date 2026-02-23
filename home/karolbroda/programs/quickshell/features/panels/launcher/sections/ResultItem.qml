@@ -44,8 +44,47 @@ Item {
         spacing: Spacing.spacingMd
 
         Item {
-            Layout.preferredWidth: 32
+            id: iconSlot
+            Layout.preferredWidth: iconSlot.hasFilePreview ? 52 : 32
             Layout.preferredHeight: 32
+
+            readonly property bool hasFilePreview: {
+                if (root.result === null || root.result === undefined) return false
+                const preview = root.result.preview
+                const previewType = root.result.previewType
+                return preview !== null && preview !== undefined && preview !== ""
+                    && previewType === "file"
+            }
+
+            Rectangle {
+                anchors.centerIn: parent
+                width: 52
+                height: 32
+                radius: Spacing.radiusMd
+                color: Colors.surface0
+                clip: true
+                visible: iconSlot.hasFilePreview
+
+                Image {
+                    id: thumbnailImage
+                    anchors.fill: parent
+                    source: iconSlot.hasFilePreview ? "file://" + root.result.preview : ""
+                    sourceSize.width: 128
+                    sourceSize.height: 80
+                    fillMode: Image.PreserveAspectCrop
+                    smooth: true
+                    asynchronous: true
+                    visible: status === Image.Ready
+                }
+
+                DuotoneIcon {
+                    anchors.centerIn: parent
+                    name: "image"
+                    size: Spacing.iconMd
+                    iconState: root.isSelected ? "active" : "default"
+                    visible: thumbnailImage.status !== Image.Ready
+                }
+            }
 
             AppIcon {
                 anchors.centerIn: parent
@@ -54,7 +93,7 @@ Item {
                     return root.result.icon || ""
                 }
                 size: 28
-                visible: iconName !== ""
+                visible: !iconSlot.hasFilePreview && iconName !== ""
             }
 
             DuotoneIcon {
@@ -66,6 +105,7 @@ Item {
                 size: Spacing.iconMd
                 iconState: root.isSelected ? "active" : "default"
                 visible: {
+                    if (iconSlot.hasFilePreview) return false
                     if (root.result === null || root.result === undefined) return true
                     const icon = root.result.icon
                     return icon === null || icon === undefined || icon === ""
