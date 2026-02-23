@@ -7,32 +7,12 @@
     ./homebrew.nix
   ];
 
-  nix = {
-    settings = {
-      experimental-features = [
-        "nix-command"
-        "flakes"
-      ];
-      substituters = [
-        "https://cache.nixos.org?priority=40"
-        "https://nix-community.cachix.org?priority=43"
-      ];
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      ];
-    };
-
-    gc = {
-      automatic = true;
-      interval.Day = 7;
-      options = "--delete-older-than 14d";
-    };
-
-    optimise.automatic = true;
+  personal = {
+    nix.enable = true;
+    locale.enable = true;
+    fonts.enable = true;
+    packages.enable = true;
   };
-
-  nixpkgs.config.allowUnfree = true;
 
   system = {
     primaryUser = username;
@@ -141,10 +121,6 @@
     stateVersion = 5;
   };
 
-  time.timeZone = "Europe/Warsaw";
-
-  programs.zsh.enable = true;
-
   security.pam.services.sudo_local.touchIdAuth = true;
 
   users.users.${username} = {
@@ -152,28 +128,4 @@
     home = "/Users/${username}";
     shell = pkgs.zsh;
   };
-
-  fonts.packages = with pkgs; [
-    nerd-fonts.jetbrains-mono
-    noto-fonts
-    noto-fonts-color-emoji
-    font-awesome
-    inter
-  ];
-
-  environment.systemPackages = with pkgs; [
-    git
-    curl
-    wget
-    nil
-    age
-    openssl
-    unzip
-    desktoppr
-
-    xcodes
-
-    prismlauncher
-    xh
-  ];
 }

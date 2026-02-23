@@ -14,6 +14,7 @@ in {
     specialArgs = {inherit username;};
     overlays = commonOverlays;
     modules = [
+      ../../modules/shared
       ../../hosts/darwin
       inputs.nix-homebrew.darwinModules.nix-homebrew
       {

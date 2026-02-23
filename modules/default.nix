@@ -1,6 +1,10 @@
 {
   imports = [
-    ./nix.nix
+    ./shared
+    ./boot.nix
+    ./user.nix
+    ./documentation.nix
+    ./services.nix
     ./hardware
     ./desktop
     ./gaming

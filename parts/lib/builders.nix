@@ -23,7 +23,7 @@ in {
       else specialArgs;
   in
     lib.nixosSystem {
-      specialArgs = recursiveUpdate {inherit inputs;} specialArgs;
+      specialArgs = recursiveUpdate {inherit inputs system;} specialArgs;
       modules = concatLists [
         [
           {
@@ -65,7 +65,7 @@ in {
       else specialArgs;
   in
     inputs.nix-darwin.lib.darwinSystem {
-      specialArgs = recursiveUpdate {inherit inputs;} specialArgs;
+      specialArgs = recursiveUpdate {inherit inputs system;} specialArgs;
       modules = concatLists [
         [
           {

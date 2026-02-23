@@ -29,6 +29,8 @@ in {
   };
 
   config = mkIf config.personal.gaming.steam.enable {
+    personal.packages.enable = lib.mkDefault true;
+
     programs.steam = {
       enable = true;
       remotePlay.openFirewall = config.personal.gaming.steam.openFirewalls;

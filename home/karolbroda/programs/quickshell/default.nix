@@ -1,4 +1,8 @@
-{pkgs, elephant-wallpaper-provider, ...}: {
+{
+  pkgs,
+  elephant-wallpaper-provider,
+  ...
+}: {
   programs = {
     quickshell = {
       enable = true;

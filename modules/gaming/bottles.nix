@@ -50,6 +50,8 @@ in {
   };
 
   config = mkIf cfg.enable {
+    personal.packages.enable = lib.mkDefault true;
+
     services.udev.packages = [pkgs.game-devices-udev-rules];
 
     security.pam.loginLimits = [
