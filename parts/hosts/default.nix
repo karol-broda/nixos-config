@@ -7,7 +7,7 @@
   _module.args = {
     commonOverlays = [
       inputs.nur.overlays.default
-      inputs.self.overlays.phosphor
+      inputs.self.overlays.customPkgs
     ];
 
     sharedHomeModules = [
