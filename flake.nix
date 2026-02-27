@@ -47,6 +47,11 @@
       flake = false;
     };
 
+    ripple = {
+      url = "github:Ripple-TS/ripple";
+      flake = false;
+    };
+
     catppuccin-userstyles.url = "github:catppuccin/userstyles";
 
     nixcord.url = "github:KaylorBen/nixcord";

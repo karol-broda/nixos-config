@@ -1549,6 +1549,22 @@
         "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
       }
     },
+    "ripple": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1772051103,
+        "narHash": "sha256-417dS1cwv2NLZd45Z0XV2h7b2elV8SyDXoW+oXKM4I8=",
+        "owner": "Ripple-TS",
+        "repo": "ripple",
+        "rev": "d3727baddf68dd1c09565505c9bed5b46a04c7aa",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Ripple-TS",
+        "repo": "ripple",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "catppuccin": "catppuccin",
@@ -1576,6 +1592,7 @@
         "nur": "nur",
         "plasma-manager": "plasma-manager",
         "quickshell": "quickshell",
+        "ripple": "ripple",
         "snitch": "snitch",
         "spicetify-nix": "spicetify-nix",
         "try": "try"
