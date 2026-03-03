@@ -17,9 +17,7 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
-    hyprland.url = "github:hyprwm/Hyprland";
-    hyprlock.url = "github:hyprwm/hyprlock";
-    hyprpaper.url = "github:hyprwm/hyprpaper";
+    hyprnix.url = "github:hyprwm/hyprnix";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";

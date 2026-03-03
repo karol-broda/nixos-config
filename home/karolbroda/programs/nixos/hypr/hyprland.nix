@@ -66,6 +66,7 @@
       monitor = ", preferred, auto, 1";
 
       env = [
+        "AQ_DRM_DEVICES,/dev/dri/dgpu:/dev/dri/igpu"
         "HYPRCURSOR_SIZE,24"
         "XCURSOR_SIZE,24"
         "XCURSOR_THEME,Bibata-Modern-Ice"
@@ -191,7 +192,7 @@
         "$mainMod, F, fullscreenstate, 1 1"
         "$shiftMainMod, F, fullscreenstate, 2"
         "$mainMod, R, exec, $menu"
-        "$mainMod, T, togglesplit,"
+        "$mainMod, T, layoutmsg, togglesplit"
         "$mainMod, D, global, dashboard"
         "$mainMod, SPACE, global, quickshell:launcher"
         "$shiftMainMod, SPACE, exec, 1password --quick-access"

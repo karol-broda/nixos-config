@@ -108,5 +108,10 @@
 
   programs.nix-ld.enable = true;
 
+  services.udev.extraRules = ''
+    KERNEL=="card*", KERNELS=="0000:03:00.0", SUBSYSTEM=="drm", SUBSYSTEMS=="pci", SYMLINK+="dri/dgpu"
+    KERNEL=="card*", KERNELS=="0000:37:00.0", SUBSYSTEM=="drm", SUBSYSTEMS=="pci", SYMLINK+="dri/igpu"
+  '';
+
   system.stateVersion = "25.05";
 }

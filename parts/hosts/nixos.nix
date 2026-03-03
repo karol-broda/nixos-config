@@ -10,9 +10,7 @@
   inherit (inputs.self.lib.personal) builders;
   system = "x86_64-linux";
   pkgs-hypr = {
-    inherit (inputs.hyprland.packages.${system}) hyprland xdg-desktop-portal-hyprland;
-    inherit (inputs.hyprlock.packages.${system}) hyprlock;
-    inherit (inputs.hyprpaper.packages.${system}) hyprpaper;
+    inherit (inputs.hyprnix.packages.${system}) hyprland xdg-desktop-portal-hyprland hyprlock hyprpaper;
   };
   elephant-wallpaper-provider = inputs.elephant.packages.${system}.elephant-providers.overrideAttrs {
     pname = "elephant-wallpaper-provider";
