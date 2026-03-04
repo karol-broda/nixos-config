@@ -68,6 +68,7 @@
       network = {
         enable = true;
         hostName = "nixos";
+        performance.enable = true;
         firewall = {
           allowedTCPPorts = [
             7236
