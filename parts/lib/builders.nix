@@ -17,13 +17,14 @@ in {
     homeModules ? [],
     homeSpecialArgs ? null,
   }: let
+    platformOpts = import ./platform.nix { inherit lib system; };
     resolvedHomeSpecialArgs =
       if homeSpecialArgs != null
       then homeSpecialArgs
       else specialArgs;
   in
     lib.nixosSystem {
-      specialArgs = recursiveUpdate {inherit inputs system;} specialArgs;
+      specialArgs = recursiveUpdate {inherit inputs system platformOpts;} specialArgs;
       modules = concatLists [
         [
           {
@@ -40,7 +41,7 @@ in {
               useGlobalPkgs = true;
               useUserPackages = true;
               backupFileExtension = "backup";
-              extraSpecialArgs = recursiveUpdate {inherit inputs;} resolvedHomeSpecialArgs;
+              extraSpecialArgs = recursiveUpdate {inherit inputs platformOpts;} resolvedHomeSpecialArgs;
               sharedModules = homeModules;
               users = homeUsers;
             };
@@ -59,13 +60,14 @@ in {
     homeModules ? [],
     homeSpecialArgs ? null,
   }: let
+    platformOpts = import ./platform.nix { inherit lib system; };
     resolvedHomeSpecialArgs =
       if homeSpecialArgs != null
       then homeSpecialArgs
       else specialArgs;
   in
     inputs.nix-darwin.lib.darwinSystem {
-      specialArgs = recursiveUpdate {inherit inputs system;} specialArgs;
+      specialArgs = recursiveUpdate {inherit inputs system platformOpts;} specialArgs;
       modules = concatLists [
         [
           {
@@ -81,7 +83,7 @@ in {
               useGlobalPkgs = true;
               useUserPackages = true;
               backupFileExtension = "backup";
-              extraSpecialArgs = recursiveUpdate {inherit inputs;} resolvedHomeSpecialArgs;
+              extraSpecialArgs = recursiveUpdate {inherit inputs platformOpts;} resolvedHomeSpecialArgs;
               sharedModules = homeModules;
               users = homeUsers;
             };

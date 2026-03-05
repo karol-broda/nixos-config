@@ -2,12 +2,12 @@
   config,
   pkgs,
   lib,
-  system,
+  platformOpts,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types optionalAttrs hasSuffix;
+  inherit (lib) mkIf mkEnableOption mkOption types;
+  inherit (platformOpts) whenLinux;
   cfg = config.personal.fonts;
-  isLinux = hasSuffix "linux" system;
 in {
   options.personal.fonts = {
     enable = mkEnableOption "system font configuration";
@@ -45,7 +45,7 @@ in {
       {
         packages = cfg.packages ++ cfg.extraPackages;
       }
-      // optionalAttrs isLinux {
+      // whenLinux {
         fontconfig.enable = cfg.fontconfig.enable;
       };
   };

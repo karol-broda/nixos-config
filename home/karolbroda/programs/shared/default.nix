@@ -15,6 +15,7 @@
     ./fastfetch.nix
     ./firefox.nix
     ./librewolf.nix
+    ./zen-browser.nix
     ./obsidian.nix
     ./zed.nix
     ./spicetify.nix

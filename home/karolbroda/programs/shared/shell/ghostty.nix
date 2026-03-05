@@ -1,5 +1,5 @@
-{pkgs, ...}: let
-  isLinux = pkgs.stdenv.hostPlatform.isLinux;
+{pkgs, platformOpts, ...}: let
+  inherit (platformOpts) isLinux;
 in {
   programs.ghostty = {
     enable = true;

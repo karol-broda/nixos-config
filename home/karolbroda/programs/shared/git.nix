@@ -1,9 +1,10 @@
 {
   pkgs,
   lib,
+  platformOpts,
   ...
 }: let
-  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  inherit (platformOpts) isDarwin;
 
   opSshSignPath =
     if isDarwin

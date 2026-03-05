@@ -1,8 +1,11 @@
 {
   pkgs,
   pkgs-unstable,
+  platformOpts,
   ...
-}: {
+}: let
+  inherit (platformOpts) isLinux;
+in {
   imports = [
     ./options.nix
     ./keymaps.nix
@@ -91,7 +94,7 @@
 
     clipboard = {
       register = "unnamedplus";
-      providers.wl-copy.enable = pkgs.stdenv.hostPlatform.isLinux;
+      providers.wl-copy.enable = isLinux;
     };
 
     extraPackages = with pkgs; [

@@ -1,5 +1,5 @@
-{pkgs, ...}: let
-  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+{pkgs, platformOpts, ...}: let
+  inherit (platformOpts) isDarwin;
   rebuildCmd =
     if isDarwin
     then ''nh darwin switch ~/nix-config''

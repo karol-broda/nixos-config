@@ -2,8 +2,10 @@
   pkgs,
   inputs,
   lib,
+  platformOpts,
   ...
 }: let
+  inherit (platformOpts) whenLinux;
   spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.hostPlatform.system};
 in {
   programs.spicetify =
@@ -39,7 +41,7 @@ in {
 
       spotifyLaunchFlags = "";
     }
-    // lib.optionalAttrs pkgs.stdenv.isLinux {
+    // whenLinux {
       wayland = true;
       windowManagerPatch = false;
     };

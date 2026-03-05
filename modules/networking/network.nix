@@ -1,13 +1,13 @@
 {
   config,
   lib,
-  system,
+  platformOpts,
   ...
 }: let
-  inherit (lib) mkIf mkMerge mkEnableOption mkOption types hasSuffix;
+  inherit (lib) mkIf mkMerge mkEnableOption mkOption types;
+  inherit (platformOpts) assertLinux;
   cfg = config.personal.networking.network;
   perfCfg = cfg.performance;
-  isLinux = hasSuffix "linux" system;
 in {
   options.personal.networking.network = {
     enable = mkEnableOption "core networking configuration";
@@ -140,10 +140,7 @@ in {
   config = mkIf cfg.enable (mkMerge [
     {
       assertions = [
-        {
-          assertion = perfCfg.enable -> isLinux;
-          message = "personal.networking.network.performance requires linux; it sets kernel sysctls that do not exist on darwin";
-        }
+        (assertLinux perfCfg.enable "personal.networking.network.performance (sets kernel sysctls unavailable on darwin)")
       ];
 
       networking = {

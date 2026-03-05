@@ -2,13 +2,12 @@
   config,
   pkgs,
   lib,
-  system,
+  platformOpts,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types hasSuffix;
+  inherit (lib) mkIf mkEnableOption mkOption types;
+  inherit (platformOpts) isLinux isDarwin;
   cfg = config.personal.packages;
-  isLinux = hasSuffix "linux" system;
-  isDarwin = hasSuffix "darwin" system;
 in {
   options.personal.packages = {
     enable = mkEnableOption "system package management with named categories";

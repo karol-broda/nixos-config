@@ -423,6 +423,27 @@
         "type": "github"
       }
     },
+    "home-manager_3": {
+      "inputs": {
+        "nixpkgs": [
+          "zen-browser",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1772330611,
+        "narHash": "sha256-UZjPc/d5XRxvjDbk4veAO4XFdvx6BUum2l40V688Xq8=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "58fd7ff0eec2cda43e705c4c0585729ec471d400",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
     "homebrew-cask": {
       "flake": false,
       "locked": {
@@ -1898,7 +1919,8 @@
         "ripple": "ripple",
         "snitch": "snitch",
         "spicetify-nix": "spicetify-nix",
-        "try": "try"
+        "try": "try",
+        "zen-browser": "zen-browser"
       }
     },
     "snitch": {
@@ -2094,6 +2116,27 @@
         "owner": "hyprwm",
         "ref": "v1.3.11",
         "repo": "xdg-desktop-portal-hyprland",
+        "type": "github"
+      }
+    },
+    "zen-browser": {
+      "inputs": {
+        "home-manager": "home-manager_3",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1772638901,
+        "narHash": "sha256-kzAyU054Mzpnzgx475MgmcjYJXxXWQWBG7LLsYtHXKw=",
+        "owner": "0xc000022070",
+        "repo": "zen-browser-flake",
+        "rev": "75de12ddd50616a3628499ec18b648bceb88eb0d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "0xc000022070",
+        "repo": "zen-browser-flake",
         "type": "github"
       }
     }

@@ -54,6 +54,11 @@
 
     nixcord.url = "github:KaylorBen/nixcord";
 
+    zen-browser = {
+      url = "github:0xc000022070/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     try = {
       url = "github:tobi/try";
       inputs.nixpkgs.follows = "nixpkgs";

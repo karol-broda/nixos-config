@@ -5,6 +5,7 @@
         inherit (prev) system;
         config.allowUnfree = true;
       };
+
     in
     {
       phosphorIcons = prev.callPackage ../pkgs/phosphor-icons.nix {};

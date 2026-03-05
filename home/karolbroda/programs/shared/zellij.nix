@@ -1,9 +1,10 @@
 {
   pkgs,
   pkgs-unstable,
+  platformOpts,
   ...
 }: let
-  isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  inherit (platformOpts) isDarwin;
   copyCmd =
     if isDarwin
     then "pbcopy"

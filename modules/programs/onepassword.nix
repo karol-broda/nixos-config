@@ -21,5 +21,10 @@ in {
         polkitPolicyOwners = [username];
       };
     };
+
+    environment.etc = {
+      "1password/custom-allowed-browsers/zen-beta".text = "";
+      "1password/custom-allowed-browsers/.zen-beta-wrapped".text = "";
+    };
   };
 }

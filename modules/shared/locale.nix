@@ -1,12 +1,12 @@
 {
   config,
   lib,
-  system,
+  platformOpts,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types optionalAttrs hasSuffix;
+  inherit (lib) mkIf mkEnableOption mkOption types;
+  inherit (platformOpts) whenLinux;
   cfg = config.personal.locale;
-  isLinux = hasSuffix "linux" system;
 in {
   options.personal.locale = {
     enable = mkEnableOption "locale and timezone configuration";
@@ -37,7 +37,7 @@ in {
   config = mkIf cfg.enable ({
       time.timeZone = cfg.timeZone;
     }
-    // optionalAttrs isLinux {
+    // whenLinux {
       i18n = {
         defaultLocale = cfg.defaultLocale;
         extraLocaleSettings = cfg.extraLocaleSettings;

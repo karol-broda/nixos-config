@@ -1,11 +1,12 @@
 {
   pkgs,
   lib,
+  platformOpts,
   ...
 }: let
-  isLinux = pkgs.stdenv.hostPlatform.isLinux;
+  inherit (platformOpts) isLinux whenLinux;
 
-  linuxSettings = lib.optionalAttrs isLinux {
+  linuxSettings = whenLinux {
     "widget.use-xdg-desktop-portal.file-picker" = 1;
     "media.ffmpeg.vaapi.enabled" = true;
   };

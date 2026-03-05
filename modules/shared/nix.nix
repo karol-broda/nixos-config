@@ -1,13 +1,12 @@
 {
   config,
   lib,
-  system,
+  platformOpts,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types optionalAttrs hasSuffix;
+  inherit (lib) mkIf mkMerge mkEnableOption mkOption types;
+  inherit (platformOpts) whenLinux whenDarwin always;
   cfg = config.personal.nix;
-  isDarwin = hasSuffix "darwin" system;
-  isLinux = hasSuffix "linux" system;
 in {
   options.personal.nix = {
     enable = mkEnableOption "nix daemon and package manager configuration";
@@ -90,30 +89,35 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
-    nix = {
-      settings = {
-        experimental-features = cfg.experimentalFeatures;
-        substituters = cfg.substituters ++ cfg.extraSubstituters;
-        trusted-public-keys = cfg.trustedPublicKeys ++ cfg.extraTrustedPublicKeys;
-      };
+  config = mkIf cfg.enable (mkMerge [
 
-      gc =
-        {
-          automatic = cfg.gc.automatic;
-          options = "--delete-older-than ${cfg.gc.olderThan}";
-        }
-        // optionalAttrs isLinux {
-          dates = lib.mkDefault cfg.gc.dates;
-        }
-        // optionalAttrs isDarwin {
-          interval.Day = cfg.gc.intervalDays;
+    (always {
+      nix = {
+        settings = {
+          experimental-features = cfg.experimentalFeatures;
+          substituters = cfg.substituters ++ cfg.extraSubstituters;
+          trusted-public-keys = cfg.trustedPublicKeys ++ cfg.extraTrustedPublicKeys;
         };
 
-      optimise.automatic = cfg.optimise;
-    };
+        gc = {
+          automatic = cfg.gc.automatic;
+          options = "--delete-older-than ${cfg.gc.olderThan}";
+        };
 
-    nixpkgs.config.allowUnfree = cfg.allowUnfree;
-    programs.zsh.enable = true;
-  };
+        optimise.automatic = cfg.optimise;
+      };
+
+      nixpkgs.config.allowUnfree = cfg.allowUnfree;
+      programs.zsh.enable = true;
+    })
+
+    (whenLinux {
+      nix.gc.dates = lib.mkDefault cfg.gc.dates;
+    })
+
+    (whenDarwin {
+      nix.gc.interval.Day = cfg.gc.intervalDays;
+    })
+
+  ]);
 }
