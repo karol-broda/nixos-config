@@ -68,11 +68,7 @@
       env = [
         "AQ_DRM_DEVICES,/dev/dri/dgpu:/dev/dri/igpu"
         "HYPRCURSOR_SIZE,24"
-        "XCURSOR_SIZE,24"
-        "XCURSOR_THEME,Bibata-Modern-Ice"
-        "WLR_XCURSOR_THEME,Bibata-Modern-Ice"
-        "HYPRCURSOR_THEME,Bibata-Modern-Ice"
-        "WLR_XCURSOR_SIZE,24"
+        "HYPRCURSOR_THEME,catppuccin-frappe-lavender-cursors"
       ];
 
       "ecosystem:enforce_permissions" = true;
