@@ -12,25 +12,9 @@
   pkgs-hypr = {
     inherit (inputs.hyprnix.packages.${system}) hyprland xdg-desktop-portal-hyprland hyprlock hyprpaper;
   };
-  elephant-wallpaper-provider = inputs.elephant.packages.${system}.elephant-providers.overrideAttrs {
-    pname = "elephant-wallpaper-provider";
-
-    preBuild = ''
-      cp -r ${../../providers/wallpaper} ./internal/providers/wallpaper
-    '';
-
-    buildPhase = ''
-      runHook preBuild
-      go build -buildmode=plugin -o wallpaper.so ./internal/providers/wallpaper
-      runHook postBuild
-    '';
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out/lib/elephant/providers
-      cp wallpaper.so $out/lib/elephant/providers/
-      runHook postInstall
-    '';
+  elephant-wallpaper-provider = import ../../pkgs/elephant-wallpaper-provider.nix {
+    elephant-providers = inputs.elephant.packages.${system}.elephant-providers;
+    wallpaper-source = ../../providers/wallpaper;
   };
 in {
   flake.nixosConfigurations.nixos = builders.mkNixosHost {

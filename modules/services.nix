@@ -25,11 +25,7 @@ in {
       };
     };
 
-    thunderbolt = mkOption {
-      type = types.bool;
-      default = false;
-      description = "enable thunderbolt/bolt device management";
-    };
+    thunderbolt.enable = mkEnableOption "thunderbolt/bolt device management";
   };
 
   config = lib.mkMerge [
@@ -49,7 +45,7 @@ in {
       };
     })
 
-    (mkIf cfg.thunderbolt {
+    (mkIf cfg.thunderbolt.enable {
       services.hardware.bolt.enable = true;
     })
   ];

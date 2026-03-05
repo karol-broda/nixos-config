@@ -15,7 +15,6 @@
       inputs.catppuccin.homeModules.catppuccin
       inputs.nixvim.homeModules.nixvim
       inputs.nixcord.homeModules.nixcord
-      inputs.try.homeModules.default
       inputs.zen-browser.homeModules.default
     ];
   };

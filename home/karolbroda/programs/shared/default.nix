@@ -1,8 +1,11 @@
 {
   pkgs,
   pkgs-unstable,
+  inputs,
   ...
-}: {
+}: let
+  system = pkgs.stdenv.hostPlatform.system;
+in {
   imports = [
     ./git.nix
     ./shell
@@ -26,6 +29,22 @@
   ];
 
   home.packages = with pkgs; [
+    fastfetch
+    htop
+
+    ripgrep
+    fzf
+    zoxide
+    fd
+    jq
+    gh
+    kubectl
+
+    bun
+    corepack_24
+
+    inputs.snitch.packages.${system}.default
+
     blockbench
     zotero
     just
@@ -33,4 +52,11 @@
     television
     pkgs-unstable.code-cursor
   ];
+
+  home.file = {
+    "Pictures/Wallpapers".source = ../../wallpapers;
+    "Pictures/ProfilePictures".source = ../../profile-pictures;
+  };
+
+  programs.home-manager.enable = true;
 }

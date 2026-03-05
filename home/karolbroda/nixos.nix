@@ -1,14 +1,9 @@
 {
   pkgs,
   pkgs-unstable,
-  inputs,
-  pkgs-hypr,
   username,
   ...
-}: let
-  tryPkg = inputs.try.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  snitchPkg = inputs.snitch.packages.${pkgs.stdenv.hostPlatform.system}.default;
-in {
+}: {
   imports = [
     ./programs/shared
     ./programs/nixos
@@ -29,14 +24,7 @@ in {
       QT_AUTO_SCREEN_SCALE_FACTOR = "1";
     };
 
-    file = {
-      "Pictures/Wallpapers".source = ./wallpapers;
-      "Pictures/ProfilePictures".source = ./profile-pictures;
-    };
-
     packages = with pkgs; [
-      fastfetch
-      htop
       pkgs-unstable.app2unit
 
       kdePackages.kconfig
@@ -46,18 +34,7 @@ in {
       qt6Packages.qtstyleplugin-kvantum
       adwaita-qt6
 
-      ripgrep
-      fzf
-      zoxide
-      fd
-      jq
-      gh
-      kubectl
-
       komikku
-
-      bun
-
       rustscan
 
       (ghidra.withExtensions (p:
@@ -74,25 +51,14 @@ in {
       hunspellDicts.en_US
 
       google-chrome
-
-      corepack_24
       ov
       hoppscotch
       horizon-eda
       tor-browser
       lazysql
-      tryPkg
-      snitchPkg
 
       kdePackages.qtdeclarative
     ];
   };
 
-  programs = {
-    home-manager.enable = true;
-    try = {
-      enable = true;
-      path = "~/experiments";
-    };
-  };
 }

@@ -87,7 +87,7 @@
     services = {
       desktop.enable = true;
       power.enable = true;
-      thunderbolt = true;
+      thunderbolt.enable = true;
     };
 
     programs = {

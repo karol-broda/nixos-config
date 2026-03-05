@@ -1,13 +1,9 @@
 {
   pkgs,
-  inputs,
   username,
   lib,
   ...
-}: let
-  tryPkg = inputs.try.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  snitchPkg = inputs.snitch.packages.${pkgs.stdenv.hostPlatform.system}.default;
-in {
+}: {
   imports = [
     ./programs/shared
     ./programs/darwin
@@ -49,40 +45,11 @@ in {
       SSH_AUTH_SOCK = "$HOME/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock";
     };
 
-    file = {
-      "Pictures/Wallpapers".source = ./wallpapers;
-      "Pictures/ProfilePictures".source = ./profile-pictures;
-      ".hushlogin".text = "";
-    };
+    file.".hushlogin".text = "";
 
     packages = with pkgs; [
-      fastfetch
-      htop
-
-      ripgrep
-      fzf
-      zoxide
-      fd
-      jq
-      gh
-      kubectl
-
-      bun
-      corepack_24
-      tryPkg
-
-      snitchPkg
-
       phosphorIcons
     ];
-  };
-
-  programs = {
-    home-manager.enable = true;
-    try = {
-      enable = true;
-      path = "~/experiments";
-    };
   };
 
   fonts.fontconfig.enable = true;

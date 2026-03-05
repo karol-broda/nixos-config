@@ -59,11 +59,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    try = {
-      url = "github:tobi/try";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     snitch.url = "github:karol-broda/snitch";
 
     elephant.url = "github:abenz1267/elephant";
