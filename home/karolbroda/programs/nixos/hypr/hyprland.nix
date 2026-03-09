@@ -173,6 +173,7 @@
       };
 
       cursor = {
+        no_hardware_cursors = true;
         hide_on_key_press = true;
       };
 
