@@ -1,6 +1,7 @@
 {
   inputs,
   username,
+  theme,
   mkPkgsUnstable,
   mkPkgsOldWorking,
   commonOverlays,
@@ -48,7 +49,7 @@ in {
       ];
     homeUsers.${username} = import ../../home/karolbroda/nixos.nix;
     homeSpecialArgs = {
-      inherit username pkgs-hypr elephant-wallpaper-provider;
+      inherit username theme pkgs-hypr elephant-wallpaper-provider;
       pkgs-unstable = mkPkgsUnstable system;
     };
   };

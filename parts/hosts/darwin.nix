@@ -1,6 +1,7 @@
 {
   inputs,
   username,
+  theme,
   mkPkgsUnstable,
   commonOverlays,
   sharedHomeModules,
@@ -34,7 +35,7 @@ in {
     homeModules = sharedHomeModules;
     homeUsers.${username} = import ../../home/karolbroda/darwin.nix;
     homeSpecialArgs = {
-      inherit username;
+      inherit username theme;
       pkgs-unstable = mkPkgsUnstable "aarch64-darwin";
     };
   };

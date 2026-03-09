@@ -1,20 +1,42 @@
-{lib, ...}: let
-  accent = "#babbf1";
+{theme, ...}: let
+  inherit (theme) colors icons ansi;
 
-  esc = builtins.fromJSON ''"\u001b"'';
+  inherit (colors) flamingo pink mauve red maroon peach yellow green teal sky sapphire blue;
+  inherit (colors) subtext0 overlay0 surface2;
 
+  r = ansi.reset;
+  inherit (ansi) esc fg padRight lightDashes heavyDashes;
+
+  # all lines (borders, rows, dividers) must total boxInnerWidth + 2 visible chars
   boxInnerWidth = 38;
 
-  dashes = n: lib.strings.concatStrings (lib.lists.genList (_: "─") n);
-
-  mkHeader = {
+  mkBorder = {
     left,
     label,
     right,
+    color,
   }: let
     labelLen = builtins.stringLength label;
     dashCount = boxInnerWidth - 5 - labelLen;
-  in "${left}─╴ ${label} ╶${dashes dashCount}${right}";
+    dim = fg overlay0;
+  in "${dim}${left}─ ${r}${fg color} ${label} ${r} ${dim}${lightDashes dashCount}${right}${r}";
+
+  mkDivider = {
+    label,
+    color,
+  }: let
+    labelLen = builtins.stringLength label;
+    dashCount = boxInnerWidth - 5 - labelLen;
+    accent = fg color;
+  in "${accent}╞═  ${label}  ${heavyDashes dashCount}╡${r}";
+
+  mkKey = {
+    icon,
+    label,
+    color,
+  }: let
+    padded = padRight 9 label;
+  in "{$1}  {##${color}}${icon}{##${subtext0}}  ${padded}{##${surface2}}·";
 
   kittyLogo = ''
     ${esc}[38;2;202;158;230m       ,${esc}[0m
@@ -47,6 +69,7 @@
     ${esc}[38;2;186;187;241m                   `----`${esc}[0m
   '';
 
+  # draws both │ borders then moves cursor back so key content fills the gap
   rowWrapper = "│${esc}[${toString boxInnerWidth}C│${esc}[${toString boxInnerWidth}D";
 in {
   programs.fastfetch = {
@@ -59,7 +82,7 @@ in {
         type = "data-raw";
         source = kittyLogo;
         padding = {
-          top = 1;
+          top = 0;
           right = 2;
           left = 0;
           bottom = 0;
@@ -69,8 +92,8 @@ in {
       display = {
         separator = " ";
         color = {
-          keys = accent;
-          separator = accent;
+          keys = "#${overlay0}";
+          separator = "#${surface2}";
         };
         size = {
           binaryPrefix = "si";
@@ -80,162 +103,226 @@ in {
 
       modules = [
         "break"
+        "break"
 
         {
           type = "custom";
-          format = mkHeader {
+          format = mkBorder {
             left = "╭";
             label = "system";
             right = "╮";
+            color = mauve;
           };
         }
         {
           type = "title";
-          key = "{$1}   ";
-          format = "{user-name}@{host-name}";
-        }
-
-        {
-          type = "custom";
-          format = mkHeader {
-            left = "├";
-            label = "basics";
-            right = "┤";
+          key = mkKey {
+            icon = icons.account;
+            label = "user";
+            color = mauve;
           };
+          format = "{##${blue}}{user-name}{##${overlay0}}@{##${blue}}{host-name}";
         }
         {
           type = "os";
-          key = "{$1}    os       ·";
+          key = mkKey {
+            icon = icons.nix;
+            label = "os";
+            color = blue;
+          };
           format = "{name}";
         }
         {
           type = "kernel";
-          key = "{$1}    kernel   ·";
+          key = mkKey {
+            icon = icons.cog;
+            label = "kernel";
+            color = sapphire;
+          };
           format = "{release}";
         }
         {
           type = "packages";
-          key = "{$1}    packages ·";
+          key = mkKey {
+            icon = icons.package;
+            label = "packages";
+            color = sky;
+          };
           format = "{all}";
         }
         {
           type = "uptime";
-          key = "{$1}  󰔟  uptime   ·";
+          key = mkKey {
+            icon = icons.clockOutline;
+            label = "uptime";
+            color = green;
+          };
           format = "{?days}{days}d {?}{hours}h {minutes}m";
         }
 
         {
           type = "custom";
-          format = mkHeader {
-            left = "├";
+          format = mkDivider {
             label = "session";
-            right = "┤";
+            color = teal;
           };
         }
         {
           type = "shell";
-          key = "{$1}  󰮯  shell    ·";
+          key = mkKey {
+            icon = icons.bash;
+            label = "shell";
+            color = teal;
+          };
           format = "{pretty-name}";
         }
         {
           type = "terminal";
-          key = "{$1}  󰆍  term     ·";
+          key = mkKey {
+            icon = icons.console;
+            label = "term";
+            color = green;
+          };
           format = "{pretty-name}";
         }
         {
           type = "wm";
-          key = "{$1}  󰨇  wm       ·";
+          key = mkKey {
+            icon = icons.monitorDash;
+            label = "wm";
+            color = sapphire;
+          };
           format = "{pretty-name}";
+        }
+        {
+          type = "player";
+          key = mkKey {
+            icon = icons.musicNote;
+            label = "player";
+            color = pink;
+          };
+          format = "{player}";
+        }
+        {
+          type = "media";
+          key = mkKey {
+            icon = icons.music;
+            label = "song";
+            color = flamingo;
+          };
+          format = "{?title}{title}{?}";
+        }
+        {
+          type = "media";
+          key = mkKey {
+            icon = icons.microphone;
+            label = "artist";
+            color = maroon;
+          };
+          format = "{?artist}{artist}{?}";
+        }
+        {
+          type = "media";
+          key = mkKey {
+            icon = icons.album;
+            label = "album";
+            color = mauve;
+          };
+          format = "{?album}{album}{?}";
         }
 
         {
           type = "custom";
-          format = mkHeader {
-            left = "├";
+          format = mkDivider {
             label = "hardware";
-            right = "┤";
+            color = peach;
           };
         }
         {
           type = "cpu";
-          key = "{$1}    cpu      ·";
+          key = mkKey {
+            icon = icons.chip;
+            label = "cpu";
+            color = peach;
+          };
           format = "{name:20}";
         }
         {
           type = "gpu";
-          key = "{$1}  󰍛  gpu      ·";
+          key = mkKey {
+            icon = icons.memory;
+            label = "gpu";
+            color = red;
+          };
           format = "{name:20}";
         }
         {
           type = "memory";
-          key = "{$1}  󰑭  memory   ·";
-          format = "{used}/{total}";
+          key = mkKey {
+            icon = icons.database;
+            label = "memory";
+            color = yellow;
+          };
+          format = "{used} / {total}";
+        }
+        {
+          type = "disk";
+          key = mkKey {
+            icon = icons.harddisk;
+            label = "disk";
+            color = maroon;
+          };
+          format = "{size-used} / {size-total}";
         }
         {
           type = "display";
-          key = "{$1}  󰍹  monitor  ·";
-          format = "{width}x{height}";
-        }
-
-        {
-          type = "custom";
-          format = mkHeader {
-            left = "├";
-            label = "media";
-            right = "┤";
+          key = mkKey {
+            icon = icons.monitor;
+            label = "monitor";
+            color = flamingo;
           };
-        }
-        {
-          type = "player";
-          key = "{$1}  󰎈  player   ·";
-          format = "{name:20}";
-        }
-        {
-          type = "media";
-          key = "{$1}  󰝚  media    ·";
-          format = "{combined:20}";
+          format = "{width}x{height}{?refresh-rate} @ {refresh-rate}Hz{?}";
         }
 
         {
           type = "custom";
-          format = mkHeader {
-            left = "├";
+          format = mkDivider {
             label = "clock";
-            right = "┤";
+            color = yellow;
           };
         }
         {
           type = "datetime";
-          key = "{$1}  󰃭  date     ·";
+          key = mkKey {
+            icon = icons.calendar;
+            label = "date";
+            color = yellow;
+          };
           format = "{year}-{month-pretty}-{day-pretty}";
         }
         {
           type = "datetime";
-          key = "{$1}  󰅐  time     ·";
+          key = mkKey {
+            icon = icons.clock;
+            label = "time";
+            color = peach;
+          };
           format = "{hour-pretty}:{minute-pretty}:{second-pretty}";
         }
 
         {
-          type = "custom";
-          format = mkHeader {
-            left = "├";
-            label = "colors";
-            right = "┤";
-          };
-        }
-        {
           type = "colors";
-          key = "{$1}   ";
+          key = mkKey {
+            icon = icons.palette;
+            label = "palette";
+            color = pink;
+          };
           symbol = "circle";
         }
 
         {
           type = "custom";
-          format = mkHeader {
-            left = "╰";
-            label = "end";
-            right = "╯";
-          };
+          format = "${fg overlay0}╰${lightDashes boxInnerWidth}╯${r}";
         }
       ];
     };
