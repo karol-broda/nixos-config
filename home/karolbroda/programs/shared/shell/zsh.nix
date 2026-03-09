@@ -50,25 +50,24 @@
 
       export DO_NOT_TRACK=1
       export EDITOR="nvim"
-      _direnv_hook() {
-        emulate -L zsh
-        local old_fpath="$fpath"
-        local dir
+      _update_nix_completions() {
+        local dir completion_dir changed=0
 
-        for dir in $PATH; do
-          local completion_dir="''${dir%/bin}/share/zsh/site-functions"
-          if [[ -d "$completion_dir" ]] && [[ ! " ''${fpath[*]} " =~ " ''${completion_dir} " ]]; then
+        for dir in $path; do
+          completion_dir="''${dir%/bin}/share/zsh/site-functions"
+          if [[ -d "$completion_dir" ]] && (( ! ''${fpath[(Ie)$completion_dir]} )); then
             fpath=("$completion_dir" $fpath)
+            changed=1
           fi
         done
 
-        if [[ "$old_fpath" != "$fpath" ]]; then
+        if (( changed )); then
           compinit
         fi
       }
 
       autoload -U add-zsh-hook
-      add-zsh-hook precmd _direnv_hook
+      add-zsh-hook precmd _update_nix_completions
     '';
 
     shellAliases = {
