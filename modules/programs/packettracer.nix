@@ -1,12 +1,12 @@
 {
   config,
-  pkgs,
+  pkgs-old-working,
   lib,
   ...
 }: let
   inherit (lib) mkIf mkEnableOption getExe;
   cfg = config.personal.programs.packettracer;
-  packetTracerEval = builtins.tryEval pkgs.ciscoPacketTracer8;
+  packetTracerEval = builtins.tryEval pkgs-old-working.ciscoPacketTracer8;
   packetTracerPkg =
     if packetTracerEval.success == true
     then packetTracerEval.value
