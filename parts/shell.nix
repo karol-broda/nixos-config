@@ -4,6 +4,9 @@
       packages = [
         pkgs.nixd
         pkgs.alejandra
+        pkgs.statix
+        pkgs.deadnix
+        pkgs.just
         pkgs.kdePackages.qtdeclarative
       ];
     };

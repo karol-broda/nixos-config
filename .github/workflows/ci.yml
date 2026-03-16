@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  check:
+    name: Evaluate & lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: DeterminateSystems/nix-installer-action@main
+
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: nix flake check
+        run: nix flake check --print-build-logs
+
+      - name: Build plan (dry run)
+        if: github.event_name == 'pull_request'
+        id: dry-run
+        run: |
+          nix build .#nixosConfigurations.nixos.config.system.build.toplevel \
+            --dry-run 2>&1 | tee build-plan.txt || true
+
+      - name: Post build plan as PR comment
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -s build-plan.txt ]; then
+            echo "nothing to build (all derivations cached)." > build-plan.txt
+          fi
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body "$(printf '### build plan\n```\n'; cat build-plan.txt; printf '\n```')" \
+            --edit-last 2>/dev/null || \
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body "$(printf '### build plan\n```\n'; cat build-plan.txt; printf '\n```')"
+
+  open-issue-on-failure:
+    name: Open issue on master failure
+    runs-on: ubuntu-latest
+    needs: check
+    if: failure() && github.ref == 'refs/heads/master'
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create labels if missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create "broken-build" --color "d73a4a" --description "build or eval is broken" 2>/dev/null || true
+
+      - name: Open issue if none already open
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --label "broken-build" --state open --json number --jq '.[0].number')
+          if [ -z "$existing" ]; then
+            gh issue create \
+              --title "ci: check failed on master ($(date '+%Y-%m-%d'))" \
+              --body "the CI check failed on the master branch.
+
+**workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+**commit:** ${{ github.sha }}" \
+              --label "broken-build"
+          fi

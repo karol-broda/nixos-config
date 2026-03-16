@@ -1,0 +1,149 @@
+name: Update flake inputs
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # monday 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  update:
+    name: Update, build, diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          df -h
+
+      - uses: DeterminateSystems/nix-installer-action@main
+
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Build old system
+        id: old-build
+        run: |
+          nix build .#nixosConfigurations.nixos.config.system.build.toplevel \
+            --out-link old-system \
+            --print-build-logs
+        continue-on-error: true
+
+      - name: Update flake inputs
+        run: nix flake update
+
+      - name: Check whether flake.lock changed
+        id: changed
+        run: |
+          if git diff --quiet flake.lock; then
+            echo "result=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "result=true" >> "$GITHUB_OUTPUT"
+            git diff flake.lock
+          fi
+
+      - name: Stage updated flake.lock
+        if: steps.changed.outputs.result == 'true'
+        run: git add flake.lock
+
+      - name: Build new system
+        if: steps.changed.outputs.result == 'true'
+        id: new-build
+        run: |
+          nix build .#nixosConfigurations.nixos.config.system.build.toplevel \
+            --out-link new-system \
+            --print-build-logs
+        continue-on-error: true
+
+      - name: Generate nvd diff
+        if: >
+          steps.changed.outputs.result == 'true' &&
+          steps.old-build.outcome == 'success' &&
+          steps.new-build.outcome == 'success'
+        run: |
+          nix run nixpkgs#nvd -- diff old-system new-system > nvd-diff.txt 2>&1 \
+            || echo "(nvd diff failed)" > nvd-diff.txt
+
+      - name: Write PR body
+        if: steps.changed.outputs.result == 'true'
+        run: |
+          printf '## flake inputs updated\n' > pr-body.md
+
+          if [ -f nvd-diff.txt ]; then
+            printf '\n### system diff\n```\n' >> pr-body.md
+            cat nvd-diff.txt >> pr-body.md
+            printf '\n```\n' >> pr-body.md
+          else
+            printf '\n_system diff unavailable — no cached previous build_\n' >> pr-body.md
+          fi
+
+      - name: Create labels if missing
+        if: steps.changed.outputs.result == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create "flake-update" --color "0075ca" --description "flake input update" 2>/dev/null || true
+
+      - name: Create PR
+        if: steps.changed.outputs.result == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="flake-update-$(date '+%Y-%m-%d')"
+
+          existing_pr=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number')
+          if [ -n "$existing_pr" ]; then
+            gh pr close "$existing_pr" --delete-branch 2>/dev/null || true
+          fi
+
+          git checkout -b "$BRANCH"
+          git commit -m "chore(flake): update inputs $(date '+%Y-%m-%d')"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "chore(flake): update inputs $(date '+%Y-%m-%d')" \
+            --body-file pr-body.md \
+            --label "flake-update" \
+            --base master \
+            --head "$BRANCH"
+
+  open-issue-on-failure:
+    name: Open issue on build failure
+    runs-on: ubuntu-latest
+    needs: update
+    if: failure()
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create labels if missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create "broken-build" --color "d73a4a" --description "build or eval is broken" 2>/dev/null || true
+          gh label create "flake-update" --color "0075ca" --description "flake input update" 2>/dev/null || true
+
+      - name: Open issue if none already open
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --label "broken-build" --state open --json number --jq '.[0].number')
+          if [ -z "$existing" ]; then
+            gh issue create \
+              --title "flake update broke build ($(date '+%Y-%m-%d'))" \
+              --body "the automated flake update failed to build the nixos configuration.
+
+**workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+check the run logs to find which input caused the breakage." \
+              --label "broken-build,flake-update"
+          fi

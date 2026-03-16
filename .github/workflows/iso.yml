@@ -1,0 +1,50 @@
+name: Build ISO
+
+on:
+  schedule:
+    - cron: "0 10 1 * *" # first of every month, 10:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & release ISO
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
+          df -h
+
+      - uses: DeterminateSystems/nix-installer-action@main
+
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Build ISO
+        run: |
+          nix build .#nixosConfigurations.nixos.config.system.build.isoImage \
+            --print-build-logs
+
+          ISO_PATH=$(ls result/iso/*.iso)
+          echo "ISO_PATH=$ISO_PATH" >> "$GITHUB_ENV"
+
+      - name: Get ISO size
+        run: du -sh "$ISO_PATH"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="iso-$(date '+%Y-%m-%d')"
+
+          gh release delete "$TAG" --yes 2>/dev/null || true
+          git push origin ":refs/tags/$TAG" 2>/dev/null || true
+
+          gh release create "$TAG" "$ISO_PATH" \
+            --title "iso $(date '+%Y-%m-%d')" \
+            --notes "built from commit ${{ github.sha }}" \
+            --latest=false
