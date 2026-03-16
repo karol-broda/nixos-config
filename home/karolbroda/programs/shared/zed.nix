@@ -21,6 +21,7 @@
       "toml"
       "dockerfile"
       "markdown"
+      "mdx"
       "java"
       "lean4"
       "zig"

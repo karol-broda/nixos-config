@@ -51,6 +51,8 @@ in {
     posting
     television
     pkgs-unstable.code-cursor
+
+    taskwarrior3
   ];
 
   home.file = {
