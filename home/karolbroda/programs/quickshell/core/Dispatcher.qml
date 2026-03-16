@@ -104,6 +104,21 @@ Singleton {
                 Network.toggleWifi()
                 break
 
+            case "bluetooth.togglePower":
+                Bluetooth.togglePower()
+                break
+
+            case "bluetooth.toggleDiscovery":
+                Bluetooth.toggleDiscovery()
+                break
+
+            case "bluetooth.toggleDevice":
+                const btDev = payload.device
+                if (btDev !== null && btDev !== undefined) {
+                    Bluetooth.toggleDevice(btDev)
+                }
+                break
+
             case "workspace.switch":
                 const wsId = payload.id
                 if (wsId !== null && wsId !== undefined) {

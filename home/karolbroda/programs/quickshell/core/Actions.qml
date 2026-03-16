@@ -66,6 +66,18 @@ Singleton {
         return { type: "network.toggleWifi", payload: {} }
     }
 
+    function toggleBluetooth() {
+        return { type: "bluetooth.togglePower", payload: {} }
+    }
+
+    function toggleBluetoothDiscovery() {
+        return { type: "bluetooth.toggleDiscovery", payload: {} }
+    }
+
+    function toggleBluetoothDevice(device) {
+        return { type: "bluetooth.toggleDevice", payload: { device: device } }
+    }
+
     function switchWorkspace(id) {
         return { type: "workspace.switch", payload: { id: id } }
     }

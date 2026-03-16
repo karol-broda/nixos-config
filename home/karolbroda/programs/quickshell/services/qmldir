@@ -2,6 +2,7 @@ module qs.services
 
 singleton AppIcons AppIcons.qml
 singleton Audio Audio.qml
+singleton Bluetooth Bluetooth.qml
 singleton Battery Battery.qml
 singleton Brightness Brightness.qml
 singleton Cava Cava.qml
