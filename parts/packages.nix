@@ -19,7 +19,7 @@
         spacetimedb = overlaid.spacetimedb;
       }
       // lib.optionalAttrs overlaid.stdenv.hostPlatform.isLinux {
-        hytale-launcher = pkgsUnfree.callPackage ../pkgs/hytale-launcher.nix {};
+        hytale-launcher = pkgsUnfree.callPackage ../pkgs/hytale-launcher {};
         libfprint-2-tod1-fpc = pkgsUnfree.callPackage ../pkgs/libfprint-2-tod1-fpc.nix {};
       };
   };
