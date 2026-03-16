@@ -79,6 +79,16 @@ Singleton {
         Pipewire.preferredDefaultAudioSource = newSource
     }
 
+    // peak level monitoring for the default sink (0.0–1.0)
+    readonly property real peak: sinkPeakMonitor.peak
+    readonly property list<real> peaks: sinkPeakMonitor.peaks
+
+    PwNodePeakMonitor {
+        id: sinkPeakMonitor
+        node: root.sink
+        enabled: root.sink !== null && root.sink !== undefined
+    }
+
     PwObjectTracker {
         objects: [...root.sinks, ...root.sources]
     }

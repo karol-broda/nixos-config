@@ -7,24 +7,6 @@ Singleton {
 
     readonly property string defaultIcon: "application-x-executable"
 
-    // directories to search for pixmap icons when theme lookup fails.
-    // covers nixos system profile, standard linux paths, and home-manager profile.
-    readonly property var _pixmapDirs: [
-        "/run/current-system/sw/share/pixmaps/",
-        "/run/current-system/sw/share/icons/hicolor/scalable/apps/",
-        "/run/current-system/sw/share/icons/hicolor/256x256/apps/",
-        "/run/current-system/sw/share/icons/hicolor/128x128/apps/",
-        "/run/current-system/sw/share/icons/hicolor/64x64/apps/",
-        "/run/current-system/sw/share/icons/hicolor/48x48/apps/",
-        "/usr/share/pixmaps/",
-        "/usr/share/icons/hicolor/scalable/apps/",
-        "/usr/share/icons/hicolor/256x256/apps/",
-        "/usr/share/icons/hicolor/128x128/apps/",
-        "/usr/local/share/pixmaps/"
-    ]
-
-    readonly property var _pixmapExts: [".svg", ".png", ".xpm"]
-
     // resolve an icon source from a wayland/hyprland app id.
     // tries desktop entry lookup with multiple normalization strategies,
     // then falls back to direct icon theme lookup.
@@ -44,34 +26,28 @@ Singleton {
                 return iconFromEntry
             }
 
-            var resolved = _resolveFromTheme(iconFromEntry)
+            var resolved = Quickshell.iconPath(iconFromEntry, true)
             if (_hasValue(resolved)) {
                 return resolved
             }
         }
 
-        // try resolving the app id itself as a theme icon name
-        var direct = _resolveFromTheme(appId)
-        if (_hasValue(direct)) {
-            return direct
-        }
+        // try resolving the app id itself, lowercased variant, and reverse-dns last segment
+        var candidates = [appId]
 
-        // try lowercased variant (e.g. "Firefox" → "firefox")
         var lower = appId.toLowerCase()
         if (lower !== appId) {
-            direct = _resolveFromTheme(lower)
-            if (_hasValue(direct)) {
-                return direct
-            }
+            candidates.push(lower)
         }
 
-        // for reverse-dns ids (org.mozilla.firefox), try the last segment
         var dotIdx = appId.lastIndexOf(".")
         if (dotIdx > 0 && dotIdx < appId.length - 1) {
-            var tail = appId.substring(dotIdx + 1).toLowerCase()
-            direct = _resolveFromTheme(tail)
-            if (_hasValue(direct)) {
-                return direct
+            candidates.push(appId.substring(dotIdx + 1).toLowerCase())
+        }
+
+        for (var i = 0; i < candidates.length; i++) {
+            if (Quickshell.hasThemeIcon(candidates[i])) {
+                return Quickshell.iconPath(candidates[i])
             }
         }
 
@@ -79,9 +55,8 @@ Singleton {
         var dashIdx = appId.lastIndexOf("-")
         while (dashIdx > 0) {
             var prefix = appId.substring(0, dashIdx)
-            direct = _resolveFromTheme(prefix)
-            if (_hasValue(direct)) {
-                return direct
+            if (Quickshell.hasThemeIcon(prefix)) {
+                return Quickshell.iconPath(prefix)
             }
             dashIdx = prefix.lastIndexOf("-")
         }
@@ -99,47 +74,20 @@ Singleton {
             return iconName
         }
 
-        var resolved = _resolveFromTheme(iconName)
+        var resolved = Quickshell.iconPath(iconName, true)
         if (_hasValue(resolved)) {
             return resolved
         }
 
         var lower = iconName.toLowerCase()
         if (lower !== iconName) {
-            resolved = _resolveFromTheme(lower)
+            resolved = Quickshell.iconPath(lower, true)
             if (_hasValue(resolved)) {
                 return resolved
             }
         }
 
         return _resolveFallback(fallback)
-    }
-
-    // build a list of file:// urls to try when theme lookup fails.
-    // searches pixmap directories and hicolor theme directories directly,
-    // bypassing the icon theme engine that can miss icons on nixos.
-    function fallbackSources(name) {
-        if (!_hasValue(name)) {
-            return []
-        }
-
-        var sources = []
-        var names = [name]
-
-        var lower = name.toLowerCase()
-        if (lower !== name) {
-            names.push(lower)
-        }
-
-        for (var n = 0; n < names.length; n++) {
-            for (var d = 0; d < _pixmapDirs.length; d++) {
-                for (var e = 0; e < _pixmapExts.length; e++) {
-                    sources.push("file://" + _pixmapDirs[d] + names[n] + _pixmapExts[e])
-                }
-            }
-        }
-
-        return sources
     }
 
     function getDesktopEntry(appId) {
@@ -164,6 +112,43 @@ Singleton {
         return appId
     }
 
+    // last-resort pixmap fallback for icons not found via the theme engine.
+    // with system icon theme detection most icons resolve through hasThemeIcon,
+    // but some nixos store-split icons still need direct path scanning.
+    readonly property var _pixmapDirs: [
+        "/run/current-system/sw/share/pixmaps/",
+        "/run/current-system/sw/share/icons/hicolor/scalable/apps/",
+        "/run/current-system/sw/share/icons/hicolor/256x256/apps/",
+        "/run/current-system/sw/share/icons/hicolor/128x128/apps/",
+        "/usr/share/pixmaps/"
+    ]
+
+    readonly property var _pixmapExts: [".svg", ".png", ".xpm"]
+
+    function fallbackSources(name) {
+        if (!_hasValue(name)) {
+            return []
+        }
+
+        var sources = []
+        var names = [name]
+
+        var lower = name.toLowerCase()
+        if (lower !== name) {
+            names.push(lower)
+        }
+
+        for (var n = 0; n < names.length; n++) {
+            for (var d = 0; d < _pixmapDirs.length; d++) {
+                for (var e = 0; e < _pixmapExts.length; e++) {
+                    sources.push("file://" + _pixmapDirs[d] + names[n] + _pixmapExts[e])
+                }
+            }
+        }
+
+        return sources
+    }
+
     // --- internal helpers ---
 
     function _hasValue(val) {
@@ -176,22 +161,14 @@ Singleton {
             || val.startsWith("image://")
     }
 
-    function _resolveFromTheme(name) {
-        var path = Quickshell.iconPath(name)
-        if (_hasValue(path)) {
-            return path
-        }
-        return ""
-    }
-
     function _resolveFallback(fallback) {
         if (_hasValue(fallback)) {
             if (_isDirectSource(fallback)) {
                 return fallback
             }
-            return _resolveFromTheme(fallback)
+            return Quickshell.iconPath(fallback, root.defaultIcon)
         }
-        return _resolveFromTheme(root.defaultIcon)
+        return Quickshell.iconPath(root.defaultIcon)
     }
 
     function _tryLookup(appId) {
