@@ -17,7 +17,7 @@ in {
     homeModules ? [],
     homeSpecialArgs ? null,
   }: let
-    platformOpts = import ./platform.nix { inherit lib system; };
+    platformOpts = import ./platform.nix {inherit lib system;};
     resolvedHomeSpecialArgs =
       if homeSpecialArgs != null
       then homeSpecialArgs
@@ -60,7 +60,7 @@ in {
     homeModules ? [],
     homeSpecialArgs ? null,
   }: let
-    platformOpts = import ./platform.nix { inherit lib system; };
+    platformOpts = import ./platform.nix {inherit lib system;};
     resolvedHomeSpecialArgs =
       if homeSpecialArgs != null
       then homeSpecialArgs

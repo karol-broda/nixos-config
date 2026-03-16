@@ -90,7 +90,6 @@ in {
   };
 
   config = mkIf cfg.enable (mkMerge [
-
     (always {
       nix = {
         settings = {
@@ -118,6 +117,5 @@ in {
     (whenDarwin {
       nix.gc.interval.Day = cfg.gc.intervalDays;
     })
-
   ]);
 }

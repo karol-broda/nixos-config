@@ -1,14 +1,11 @@
 {inputs, ...}: {
-  flake.overlays.customPkgs = final: prev:
-    let
-      pkgs-unstable = import inputs.nixpkgs-unstable {
-        inherit (prev) system;
-        config.allowUnfree = true;
-      };
-
-    in
-    {
-      phosphorIcons = prev.callPackage ../pkgs/phosphor-icons.nix {};
-      spacetimedb = pkgs-unstable.callPackage ../pkgs/spacetimedb.nix {};
+  flake.overlays.customPkgs = final: prev: let
+    pkgs-unstable = import inputs.nixpkgs-unstable {
+      inherit (prev) system;
+      config.allowUnfree = true;
     };
+  in {
+    phosphorIcons = prev.callPackage ../pkgs/phosphor-icons.nix {};
+    spacetimedb = pkgs-unstable.callPackage ../pkgs/spacetimedb.nix {};
+  };
 }

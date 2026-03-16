@@ -1,4 +1,8 @@
-{pkgs, platformOpts, ...}: let
+{
+  pkgs,
+  platformOpts,
+  ...
+}: let
   inherit (platformOpts) isDarwin;
   rebuildCmd =
     if isDarwin
