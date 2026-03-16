@@ -35,6 +35,23 @@ Item {
     readonly property bool _animateWidth: _isCorner || _isHorizontal
     readonly property bool _animateHeight: _isCorner || _isVertical
 
+    // true once the panel has fully opened and settled,
+    // so content size changes use the resize animation
+    // instead of the open/close animation
+    property bool _settled: false
+
+    onOpenChanged: {
+        _settled = false
+        if (open) _settleTimer.restart()
+        else _settleTimer.stop()
+    }
+
+    Timer {
+        id: _settleTimer
+        interval: Motion.panelOpenDuration + 50
+        onTriggered: root._settled = true
+    }
+
     clip: true
 
     implicitWidth: (_animateWidth && !open) ? 0 : targetWidth
@@ -44,7 +61,7 @@ Item {
         enabled: root._animateWidth && !root.suppressAnimation
 
         NumberAnimation {
-            duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
+            duration: root._settled ? 0 : (root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration)
             easing.type: Easing.BezierSpline
             easing.bezierCurve: root.open ? Motion.curveSlide : Motion.curveExit
         }
@@ -54,7 +71,7 @@ Item {
         enabled: root._animateHeight && !root.suppressAnimation
 
         NumberAnimation {
-            duration: root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration
+            duration: root._settled ? 0 : (root.open ? Motion.panelOpenDuration : Motion.panelCloseDuration)
             easing.type: Easing.BezierSpline
             easing.bezierCurve: root.open ? Motion.curveSlide : Motion.curveExit
         }

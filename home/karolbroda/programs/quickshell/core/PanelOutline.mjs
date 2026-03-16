@@ -140,11 +140,12 @@ function classifyCorner(prev, curr, next, config, radius, curvature) {
 
 
 /**
- * generates a smooth outline path around a set of panel rectangles.
+ * generates smooth outline paths around a set of panel rectangles.
+ * returns one subpath per disjoint group of panels.
  *
  * @param {Rect[]} rects
  * @param {OutlineConfig} config
- * @returns {PathSegment[]}
+ * @returns {PathSegment[][]} array of subpaths
  */
 function outlinePath(rects, config) {
     if (rects.length === 0) return []
@@ -152,21 +153,32 @@ function outlinePath(rects, config) {
     const gapThreshold = config.gapThreshold || 0
 
     const allRects = gapThreshold > 0 ? bridgeGaps(rects, gapThreshold) : rects.slice()
-    const polygon = rectilinearUnion(allRects)
+    const polygons = rectilinearUnion(allRects)
 
-    if (polygon.length < 3) return []
+    if (polygons.length === 0) return []
 
-    const vertexCount = polygon.length
-    const corners = []
+    const subpaths = []
+    for (let p = 0; p < polygons.length; p++) {
+        const polygon = polygons[p]
+        if (polygon.length < 3) continue
 
-    for (let idx = 0; idx < vertexCount; idx++) {
-        const prev = polygon[(idx - 1 + vertexCount) % vertexCount]
-        const curr = polygon[idx]
-        const next = polygon[(idx + 1) % vertexCount]
-        corners.push(classifyCorner(prev, curr, next, config, config.r, config.k))
+        const vertexCount = polygon.length
+        const corners = []
+
+        for (let idx = 0; idx < vertexCount; idx++) {
+            const prev = polygon[(idx - 1 + vertexCount) % vertexCount]
+            const curr = polygon[idx]
+            const next = polygon[(idx + 1) % vertexCount]
+            corners.push(classifyCorner(prev, curr, next, config, config.r, config.k))
+        }
+
+        const segments = emitPathSegments(corners)
+        if (segments.length > 0) {
+            subpaths.push(segments)
+        }
     }
 
-    return emitPathSegments(corners)
+    return subpaths
 }
 
 /**
@@ -213,61 +225,35 @@ function emitPathSegments(corners) {
 
 
 /**
- * @param {PathSegment[]} segments
- * @returns {Bounds}
- */
-function calculateBounds(segments) {
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
-
-    for (let idx = 0; idx < segments.length; idx++) {
-        const seg = segments[idx]
-
-        if (seg.x < minX) minX = seg.x
-        if (seg.x > maxX) maxX = seg.x
-        if (seg.y < minY) minY = seg.y
-        if (seg.y > maxY) maxY = seg.y
-
-        if (seg.cp1x !== undefined) {
-            if (seg.cp1x < minX) minX = seg.cp1x
-            if (seg.cp1x > maxX) maxX = seg.cp1x
-            if (seg.cp2x < minX) minX = seg.cp2x
-            if (seg.cp2x > maxX) maxX = seg.cp2x
-            if (seg.cp1y < minY) minY = seg.cp1y
-            if (seg.cp1y > maxY) maxY = seg.cp1y
-            if (seg.cp2y < minY) minY = seg.cp2y
-            if (seg.cp2y > maxY) maxY = seg.cp2y
-        }
-    }
-
-    if (minX === Infinity) return { x0: 0, y0: 0, x1: 0, y1: 0 }
-    return { x0: minX, y0: minY, x1: maxX, y1: maxY }
-}
-
-/**
- * @param {PathSegment[]} segments
+ * @param {PathSegment[][]} subpaths
  * @returns {string}
  */
-function toSvgString(segments) {
-    if (segments.length === 0) return ""
+function toSvgString(subpaths) {
+    if (subpaths.length === 0) return ""
 
     let path = ""
 
-    for (let idx = 0; idx < segments.length; idx++) {
-        const seg = segments[idx]
+    for (let s = 0; s < subpaths.length; s++) {
+        const segments = subpaths[s]
+        for (let idx = 0; idx < segments.length; idx++) {
+            const seg = segments[idx]
 
-        if (seg.type === "M") {
-            path += "M" + seg.x + " " + seg.y
-        } else if (seg.type === "L") {
-            path += "L" + seg.x + " " + seg.y
-        } else if (seg.type === "C") {
-            path += "C" + seg.cp1x + " " + seg.cp1y + " "
-                + seg.cp2x + " " + seg.cp2y + " "
-                + seg.x + " " + seg.y
+            if (seg.type === "M") {
+                path += "M" + seg.x + " " + seg.y
+            } else if (seg.type === "L") {
+                path += "L" + seg.x + " " + seg.y
+            } else if (seg.type === "C") {
+                path += "C" + seg.cp1x + " " + seg.cp1y + " "
+                    + seg.cp2x + " " + seg.cp2y + " "
+                    + seg.x + " " + seg.y
+            }
         }
+
+        path += "Z"
     }
 
-    return path + "Z"
+    return path
 }
 
 
-export { outlinePath, calculateBounds, toSvgString }
+export { outlinePath, toSvgString }

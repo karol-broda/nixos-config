@@ -93,26 +93,28 @@ function tryBridgeVertical(output, rectA, rectB, threshold) {
 
 
 /**
- * computes the clockwise boundary polygon of the union of axis-aligned rects.
+ * computes the clockwise boundary polygons of the union of axis-aligned rects.
  *
  * builds a grid from the unique x/y edges of all rects, marks cells as inside
  * if they fall within any rect, then traces the boundary between inside and
- * outside cells as directed edges and chains them into a simplified polygon.
+ * outside cells as directed edges and chains them into simplified polygons.
+ *
+ * returns multiple polygons when the rects form disjoint groups.
  *
  * @param {Rect[]} rects
- * @returns {Point[]} clockwise polygon vertices
+ * @returns {Point[][]} array of clockwise polygon vertex arrays
  */
 function rectilinearUnion(rects) {
     if (rects.length === 0) return []
 
     if (rects.length === 1) {
         const rect = rects[0]
-        return [
+        return [[
             { x: rect.x, y: rect.y },
             { x: rect.x + rect.w, y: rect.y },
             { x: rect.x + rect.w, y: rect.y + rect.h },
             { x: rect.x, y: rect.y + rect.h }
-        ]
+        ]]
     }
 
     const grid = buildOccupancyGrid(rects)
@@ -120,8 +122,15 @@ function rectilinearUnion(rects) {
 
     if (boundaryEdges.length === 0) return []
 
-    const rawPolygon = chainEdgesIntoPolygon(boundaryEdges)
-    return removeCollinearVertices(rawPolygon)
+    const rawPolygons = chainEdgesIntoPolygons(boundaryEdges)
+    const result = []
+    for (let i = 0; i < rawPolygons.length; i++) {
+        const simplified = removeCollinearVertices(rawPolygons[i])
+        if (simplified.length >= 3) {
+            result.push(simplified)
+        }
+    }
+    return result
 }
 
 
@@ -154,29 +163,33 @@ function buildOccupancyGrid(rects) {
     const colCount = xEdges.length - 1
     const rowCount = yEdges.length - 1
 
+    // build index maps for fast coordinate → grid index lookup
+    const xIndex = new Map()
+    for (let i = 0; i < xEdges.length; i++) xIndex.set(xEdges[i], i)
+    const yIndex = new Map()
+    for (let i = 0; i < yEdges.length; i++) yIndex.set(yEdges[i], i)
+
+    // paint each rect's cells directly instead of testing every cell against every rect
     const cells = []
     for (let col = 0; col < colCount; col++) {
-        cells[col] = []
-        const cellCenterX = (xEdges[col] + xEdges[col + 1]) / 2
+        cells[col] = new Array(rowCount).fill(false)
+    }
 
-        for (let row = 0; row < rowCount; row++) {
-            const cellCenterY = (yEdges[row] + yEdges[row + 1]) / 2
-            cells[col][row] = isPointInAnyRect(cellCenterX, cellCenterY, rects)
+    for (let idx = 0; idx < rects.length; idx++) {
+        const rect = rects[idx]
+        const colStart = xIndex.get(rect.x)
+        const colEnd = xIndex.get(rect.x + rect.w)
+        const rowStart = yIndex.get(rect.y)
+        const rowEnd = yIndex.get(rect.y + rect.h)
+
+        for (let col = colStart; col < colEnd; col++) {
+            for (let row = rowStart; row < rowEnd; row++) {
+                cells[col][row] = true
+            }
         }
     }
 
     return { xEdges, yEdges, cells, colCount, rowCount }
-}
-
-/** @param {number} px  @param {number} py  @param {Rect[]} rects  @returns {boolean} */
-function isPointInAnyRect(px, py, rects) {
-    for (let idx = 0; idx < rects.length; idx++) {
-        const rect = rects[idx]
-        if (px >= rect.x && px < rect.x + rect.w && py >= rect.y && py < rect.y + rect.h) {
-            return true
-        }
-    }
-    return false
 }
 
 
@@ -241,33 +254,48 @@ function collectBoundaryEdges(grid) {
 }
 
 /**
+ * traces all closed loops from the directed boundary edges.
+ * returns multiple polygons when the union has disjoint regions.
+ *
  * @param {DirectedEdge[]} edges
- * @returns {Point[]}
+ * @returns {Point[][]}
  */
-function chainEdgesIntoPolygon(edges) {
-    // using stringified coords as map keys is cursed but it works
+function chainEdgesIntoPolygons(edges) {
     const edgeByStart = new Map()
     for (let idx = 0; idx < edges.length; idx++) {
         const edge = edges[idx]
         edgeByStart.set(edge.startX + "," + edge.startY, edge)
     }
 
-    const polygon = []
-    const firstKey = edges[0].startX + "," + edges[0].startY
-    let currentKey = firstKey
-    let steps = 0
-    const maxSteps = edges.length + 1
+    const visited = new Set()
+    const polygons = []
 
-    do {
-        const edge = edgeByStart.get(currentKey)
-        if (edge === undefined) break
+    for (let idx = 0; idx < edges.length; idx++) {
+        const startKey = edges[idx].startX + "," + edges[idx].startY
+        if (visited.has(startKey)) continue
 
-        polygon.push({ x: edge.startX, y: edge.startY })
-        currentKey = edge.endX + "," + edge.endY
-        steps++
-    } while (currentKey !== firstKey && steps < maxSteps)
+        const polygon = []
+        let currentKey = startKey
+        let steps = 0
+        const maxSteps = edges.length + 1
 
-    return polygon
+        do {
+            if (visited.has(currentKey)) break
+            const edge = edgeByStart.get(currentKey)
+            if (edge === undefined) break
+
+            visited.add(currentKey)
+            polygon.push({ x: edge.startX, y: edge.startY })
+            currentKey = edge.endX + "," + edge.endY
+            steps++
+        } while (currentKey !== startKey && steps < maxSteps)
+
+        if (polygon.length >= 3) {
+            polygons.push(polygon)
+        }
+    }
+
+    return polygons
 }
 
 /**

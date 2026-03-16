@@ -15,6 +15,7 @@ Singleton {
 
     readonly property int panelOpenDuration: 350
     readonly property int panelCloseDuration: 260
+    readonly property int panelResizeDuration: 250
     readonly property int hoverDuration: 150
     readonly property int pressDuration: 100
     readonly property int glowDuration: 300
