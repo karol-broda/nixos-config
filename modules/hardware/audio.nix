@@ -120,7 +120,28 @@ in {
               "bluez5.enable-msbc" = true;
               "bluez5.enable-hw-volume" = true;
               "bluez5.codecs" = cfg.bluetoothCodecs;
+              "bluez5.roles" = ["a2dp_sink" "a2dp_source" "bap_sink" "bap_source" "hsp_hs" "hsp_ag" "hfp_hf" "hfp_ag"];
             };
+
+            "monitor.bluez.rules" = [
+              {
+                matches = [{"device.name" = "~bluez_card.*";}];
+                actions = {
+                  update-props = {
+                    "bluez5.auto-connect" = ["hfp_hf" "hsp_hs" "a2dp_sink"];
+                    "bluez5.reconnect-profiles" = ["hfp_hf" "hsp_hs" "a2dp_sink"];
+                  };
+                };
+              }
+              {
+                matches = [{"node.name" = "~bluez_output.*";}];
+                actions = {
+                  update-props = {
+                    "session.suspend-timeout-seconds" = 0;
+                  };
+                };
+              }
+            ];
           };
 
           "11-bluetooth-policy" = {

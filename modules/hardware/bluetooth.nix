@@ -22,6 +22,12 @@ in {
       description = "enable experimental bluez features (battery reporting, fast connect)";
     };
 
+    fastConnectable = mkOption {
+      type = types.bool;
+      default = true;
+      description = "enable fast connectable mode (uses more power but reduces connection latency)";
+    };
+
     extraPackages = mkOption {
       type = types.listOf types.package;
       default = [pkgs.bluetuith];
@@ -36,6 +42,17 @@ in {
       settings = {
         General = {
           Experimental = cfg.experimental;
+          FastConnectable = cfg.fastConnectable;
+          MultiProfile = "multiple";
+          ReconnectAttempts = 7;
+          ReconnectIntervals = "1,2,4,8,16,32,64";
+          JustWorksRepairing = "always";
+        };
+        LE = {
+          ConnectionLatency = 0;
+        };
+        Policy = {
+          AutoEnable = true;
         };
       };
     };
