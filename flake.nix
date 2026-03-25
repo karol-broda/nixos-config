@@ -90,6 +90,21 @@
     };
   };
 
+  nixConfig = {
+    extra-substituters = [
+      "https://cache.karolbroda.com/nixos"
+      "https://nix-community.cachix.org"
+      "https://hyprland.cachix.org"
+      "https://cache.numtide.com"
+    ];
+    extra-trusted-public-keys = [
+      "nixos:fRVFLw3mNj5aX9OJaqFsRCrPGD26QazTeUnetsBpUQI="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+    ];
+  };
+
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake {inherit inputs;} {
       systems = [
