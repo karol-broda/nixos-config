@@ -91,9 +91,19 @@
         border_size = 3;
         "col.active_border" = "$lavender $mauve 45deg";
         "col.inactive_border" = "rgba(8c8fa1aa)";
-        layout = "dwindle";
+        layout = "scrolling";
         resize_on_border = false;
         allow_tearing = false;
+      };
+
+      scrolling = {
+        column_width = 0.5;
+        fullscreen_on_one_column = true;
+        focus_fit_method = 1;
+        follow_focus = true;
+        follow_min_visible = 0.4;
+        explicit_column_widths = "0.333, 0.5, 0.667, 1.0";
+        direction = "right";
       };
 
       decoration = {
@@ -142,18 +152,6 @@
         ];
       };
 
-      dwindle = {
-        pseudotile = true;
-        preserve_split = true;
-        smart_split = true;
-        force_split = 2;
-      };
-
-      master = {
-        new_status = "master";
-        center_master_fallback = "right";
-      };
-
       misc = {
         disable_hyprland_logo = true;
         vfr = true;
@@ -189,7 +187,14 @@
         "$mainMod, F, fullscreenstate, 1 1"
         "$shiftMainMod, F, fullscreenstate, 2"
         "$mainMod, R, exec, $menu"
-        "$mainMod, T, layoutmsg, togglesplit"
+        "$mainMod, T, layoutmsg, colresize +conf"
+        "$shiftMainMod, T, layoutmsg, colresize -conf"
+        "$mainMod, G, layoutmsg, fit visible"
+        "$shiftMainMod, G, layoutmsg, fit all"
+        "$mainMod, bracketright, layoutmsg, fit toend"
+        "$mainMod, bracketleft,  layoutmsg, fit tobeg"
+        "$mainMod, W, layoutmsg, togglefit"
+        "$mainMod, P, layoutmsg, promote"
         "$mainMod, D, global, dashboard"
         "$mainMod, SPACE, global, quickshell:launcher"
         "$shiftMainMod, SPACE, exec, 1password --quick-access"
@@ -233,8 +238,11 @@
         "$shiftMainMod, 9, movetoworkspace, 9"
         "$shiftMainMod, 0, movetoworkspace, 10"
 
-        "$mainMod, period,     focusmonitor, +1"
-        "$mainMod, comma,      focusmonitor, -1"
+        "$mainMod, period, layoutmsg, move +col"
+        "$mainMod, comma,  layoutmsg, move -col"
+
+        "$mainMod ALT, period,     focusmonitor, +1"
+        "$mainMod ALT, comma,      focusmonitor, -1"
         "$shiftMainMod, period, movecurrentworkspacetomonitor, +1"
         "$shiftMainMod, comma,  movecurrentworkspacetomonitor, -1"
 
@@ -249,15 +257,13 @@
         "$shiftMainMod, K, swapwindow, u"
         "$shiftMainMod, L, swapwindow, r"
 
-        "$mainMod CTRL, H, resizeactive, -30 0"
-        "$mainMod CTRL, L, resizeactive, 30 0"
+        "$mainMod CTRL, H, layoutmsg, colresize -0.05"
+        "$mainMod CTRL, L, layoutmsg, colresize +0.05"
         "$mainMod CTRL, J, resizeactive, 0 30"
         "$mainMod CTRL, K, resizeactive, 0 -30"
 
-        "$shiftMainMod CTRL, H, moveactive, -40 0"
-        "$shiftMainMod CTRL, L, moveactive, 40 0"
-        "$shiftMainMod CTRL, J, moveactive, 0 40"
-        "$shiftMainMod CTRL, K, moveactive, 0 -40"
+        "$shiftMainMod CTRL, H, layoutmsg, swapcol l"
+        "$shiftMainMod CTRL, L, layoutmsg, swapcol r"
 
         "ALT, f4, exec, xdg-open https://www.youtube.com/watch?v=dQw4w9WgXcQ"
       ];
@@ -290,6 +296,9 @@
         "match:class ^$, match:title ^$, match:xwayland true, match:float true, match:fullscreen false, no_initial_focus on"
         "match:class ^(pavucontrol)$, float on"
         "match:title ^(Picture-in-Picture)$, float on"
+        "match:title ^(Picture-in-Picture)$, pin on"
+        "match:title ^(Picture-in-Picture)$, no_initial_focus on"
+        "match:title ^(Picture-in-Picture)$, suppress_event activatefocus"
       ];
     };
   };
