@@ -1,0 +1,22 @@
+---
+paths:
+  - "**/*.zig"
+  - "build.zig"
+  - "build.zig.zon"
+---
+
+- use `errdefer` to clean up on error paths
+- prefer slices over pointers when possible
+- use `comptime` for compile-time computation, not runtime hacks
+- use `defer` for cleanup. pair every allocation with its deallocation immediately
+- return errors with `!` return type. handle them explicitly with `catch`, don't `catch unreachable` unless proven safe
+- prefer `if (optional) |value|` over `.?` when the null case needs handling
+- use `@errorName` for debugging but match on specific error values in logic
+- prefer unmanaged container variants (e.g. `std.ArrayListUnmanaged` over `std.ArrayList`). pass the allocator to each method call instead of storing it in the container
+- do not use `usingnamespace` (removed in 0.15)
+- do not use `async`/`await` keywords (removed in 0.15, will return as library-level constructs)
+- use `root_module` in `build.zig` for artifact creation, not the old `root_source_file`+`target`+`optimize` parameters
+- use concrete `std.Io.Writer`/`std.Io.Reader` types, not generic `anytype` writer patterns
+- use `{f}` format specifier for types with custom `format` methods
+- use `@branchHint(.cold)` instead of `@setCold`
+- use snake_case for `std.builtin.Type` fields (`.int` not `.Int`, `.@"struct"` not `.Struct`)

@@ -25,7 +25,7 @@ in {
     ./sioyek.nix
     ./theming.nix
     ./discord.nix
-    ./ai-coding.nix
+    ./ai-coding
   ];
 
   home.packages = with pkgs; [
