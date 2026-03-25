@@ -69,7 +69,7 @@ in {
 
     xdg.portal = mkIf cfg.portal.enable {
       enable = true;
-      extraPortals = cfg.portal.extraPortals;
+      inherit (cfg.portal) extraPortals;
       config.common.default = cfg.portal.defaultPortals;
     };
 
@@ -79,7 +79,7 @@ in {
         restart = true;
         settings = {
           default_session = {
-            command = cfg.greeter.command;
+            inherit (cfg.greeter) command;
           };
         };
       };

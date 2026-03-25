@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.nixcord = {
     enable = true;
     discord = {

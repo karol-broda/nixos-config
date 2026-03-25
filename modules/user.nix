@@ -51,8 +51,7 @@ in {
 
     users.users.${username} = {
       isNormalUser = true;
-      extraGroups = cfg.extraGroups;
-      shell = cfg.shell;
+      inherit (cfg) extraGroups shell;
       linger = lib.mkDefault cfg.linger;
     };
 

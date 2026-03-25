@@ -55,7 +55,7 @@ in {
         systemd-boot.enable = cfg.loader.systemd-boot.enable;
         efi.canTouchEfiVariables = cfg.loader.efi.canTouchEfiVariables;
       };
-      kernelPackages = cfg.kernelPackages;
+      inherit (cfg) kernelPackages;
       binfmt.emulatedSystems = cfg.emulatedSystems;
       extraModulePackages = [];
       kernelModules = cfg.extraKernelModules;

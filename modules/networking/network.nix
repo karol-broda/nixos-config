@@ -144,19 +144,15 @@ in {
       ];
 
       networking = {
-        hostName = cfg.hostName;
-        nameservers = cfg.nameservers;
-        hosts = cfg.hosts;
+        inherit (cfg) hostName nameservers hosts;
 
         networkmanager = {
-          enable = cfg.networkmanager.enable;
-          dns = cfg.networkmanager.dns;
+          inherit (cfg.networkmanager) enable dns;
           wifi.powersave = cfg.networkmanager.wifi.powersave;
         };
 
         firewall = {
-          allowedTCPPorts = cfg.firewall.allowedTCPPorts;
-          allowedUDPPorts = cfg.firewall.allowedUDPPorts;
+          inherit (cfg.firewall) allowedTCPPorts allowedUDPPorts;
         };
       };
 

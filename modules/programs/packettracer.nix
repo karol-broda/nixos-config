@@ -8,7 +8,7 @@
   cfg = config.personal.programs.packettracer;
   packetTracerEval = builtins.tryEval pkgs-old-working.ciscoPacketTracer8;
   packetTracerPkg =
-    if packetTracerEval.success == true
+    if packetTracerEval.success
     then packetTracerEval.value
     else null;
 in {
@@ -16,7 +16,7 @@ in {
     enable = mkEnableOption "cisco packet tracer (firejailed)";
   };
 
-  config = mkIf (cfg.enable && packetTracerEval.success == true) {
+  config = mkIf (cfg.enable && packetTracerEval.success) {
     programs.firejail = {
       enable = true;
 

@@ -1,17 +1,16 @@
-{ pkgs
-, lib
-, platformOpts
-, ...
-}:
-let
+{
+  pkgs,
+  lib,
+  platformOpts,
+  ...
+}: let
   inherit (platformOpts) isLinux whenLinux;
 
   linuxSettings = whenLinux {
     "widget.use-xdg-desktop-portal.file-picker" = 1;
     "media.ffmpeg.vaapi.enabled" = true;
   };
-in
-{
+in {
   programs.firefox = {
     enable = true;
     package = pkgs.firefox;
@@ -103,9 +102,9 @@ in
     enable = true;
 
     defaultApplications = {
-      "text/html" = [ "firefox.desktop" ];
-      "x-scheme-handler/http" = [ "firefox.desktop" ];
-      "x-scheme-handler/https" = [ "firefox.desktop" ];
+      "text/html" = ["firefox.desktop"];
+      "x-scheme-handler/http" = ["firefox.desktop"];
+      "x-scheme-handler/https" = ["firefox.desktop"];
     };
   };
 }

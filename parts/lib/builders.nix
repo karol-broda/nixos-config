@@ -72,6 +72,7 @@ in {
         [
           {
             nixpkgs.hostPlatform = mkDefault system;
+            networking.hostName = mkDefault hostname;
             nixpkgs.overlays = overlays;
           }
         ]

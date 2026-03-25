@@ -99,7 +99,7 @@ in {
         };
 
         gc = {
-          automatic = cfg.gc.automatic;
+          inherit (cfg.gc) automatic;
           options = "--delete-older-than ${cfg.gc.olderThan}";
         };
 

@@ -14,7 +14,7 @@
     inherit (inputs.hyprnix.packages.${system}) hyprland xdg-desktop-portal-hyprland hyprlock hyprpaper;
   };
   elephant-wallpaper-provider = import ../../pkgs/elephant-wallpaper-provider.nix {
-    elephant-providers = inputs.elephant.packages.${system}.elephant-providers;
+    inherit (inputs.elephant.packages.${system}) elephant-providers;
     wallpaper-source = ../../providers/wallpaper;
   };
 in {

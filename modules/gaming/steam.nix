@@ -36,7 +36,7 @@ in {
       remotePlay.openFirewall = config.personal.gaming.steam.openFirewalls;
       dedicatedServer.openFirewall = config.personal.gaming.steam.openFirewalls;
       localNetworkGameTransfers.openFirewall = config.personal.gaming.steam.openFirewalls;
-      extraCompatPackages = config.personal.gaming.steam.extraCompatPackages;
+      inherit (config.personal.gaming.steam) extraCompatPackages;
       protontricks.enable = config.personal.gaming.steam.enableProtontricks;
     };
 

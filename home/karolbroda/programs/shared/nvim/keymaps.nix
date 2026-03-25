@@ -1,8 +1,8 @@
-{...}: let
+_: let
   map = mode: key: action: desc: {
     inherit mode key action;
     options = {
-      desc = desc;
+      inherit desc;
       silent = true;
     };
   };
@@ -10,12 +10,11 @@
   nmap = map "n";
   imap = map "i";
   vmap = map "v";
-  xmap = map ["n" "x"];
 
   remap = mode: key: action: desc: {
     inherit mode key action;
     options = {
-      desc = desc;
+      inherit desc;
       silent = true;
       remap = true;
     };
@@ -24,7 +23,7 @@
   expr = mode: key: action: desc: {
     inherit mode key action;
     options = {
-      desc = desc;
+      inherit desc;
       silent = true;
       expr = true;
     };

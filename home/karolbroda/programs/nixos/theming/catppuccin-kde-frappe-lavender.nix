@@ -31,7 +31,7 @@ in {
     enable = true;
     workspace = {
       lookAndFeel = lookPkg;
-      colorScheme = colorScheme;
+      inherit colorScheme;
     };
   };
 }

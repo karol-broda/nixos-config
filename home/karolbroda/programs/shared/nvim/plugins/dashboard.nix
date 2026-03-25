@@ -1,4 +1,4 @@
-{...}: let
+_: let
   button = key: icon: label: action: shortcut: {
     type = "button";
     val = "${icon}  ${label}";

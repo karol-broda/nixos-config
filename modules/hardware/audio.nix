@@ -107,8 +107,7 @@ in {
       raopOpenFirewall = cfg.raop;
 
       alsa = {
-        enable = cfg.alsa.enable;
-        support32Bit = cfg.alsa.support32Bit;
+        inherit (cfg.alsa) enable support32Bit;
       };
 
       wireplumber = {

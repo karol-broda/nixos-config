@@ -1,4 +1,4 @@
-{...}: {
+_: {
   xdg.mimeApps.defaultApplications = {
     "application/pdf" = ["sioyek.desktop"];
   };

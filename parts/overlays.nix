@@ -1,5 +1,5 @@
 {inputs, ...}: {
-  flake.overlays.customPkgs = final: prev: let
+  flake.overlays.customPkgs = _final: prev: let
     pkgs-unstable = import inputs.nixpkgs-unstable {
       inherit (prev) system;
       config.allowUnfree = true;

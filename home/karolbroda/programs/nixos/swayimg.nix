@@ -1,4 +1,4 @@
-{...}: let
+_: let
   imageTypes = [
     "image/png"
     "image/jpeg"

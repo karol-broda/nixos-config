@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.nixvim.opts = {
     # line numbers
     number = true;

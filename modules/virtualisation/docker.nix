@@ -65,16 +65,10 @@ in {
   config = mkIf cfg.enable {
     virtualisation.docker = {
       enable = true;
-      enableOnBoot = cfg.enableOnBoot;
-      package = cfg.package;
-      liveRestore = cfg.liveRestore;
-      extraPackages = cfg.extraPackages;
+      inherit (cfg) enableOnBoot package liveRestore extraPackages;
       autoPrune = {
-        enable = cfg.autoPrune.enable;
-        dates = cfg.autoPrune.dates;
-        randomizedDelaySec = cfg.autoPrune.randomizedDelaySec;
+        inherit (cfg.autoPrune) enable dates randomizedDelaySec flags;
         persistent = true;
-        flags = cfg.autoPrune.flags;
       };
     };
 

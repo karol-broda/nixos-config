@@ -39,8 +39,7 @@ in {
     }
     // whenLinux {
       i18n = {
-        defaultLocale = cfg.defaultLocale;
-        extraLocaleSettings = cfg.extraLocaleSettings;
+        inherit (cfg) defaultLocale extraLocaleSettings;
       };
     });
 }

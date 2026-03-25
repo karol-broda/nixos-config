@@ -5,7 +5,6 @@
   buildFHSEnv,
   makeWrapper,
   makeDesktopItem,
-  writeScript,
   gtk3,
   nss,
   libsecret,
@@ -70,7 +69,7 @@
     pname = "hytale-launcher";
     version = finalVersion;
 
-    targetPkgs = pkgs: [
+    targetPkgs = _pkgs: [
       # launcher dependencies (webkit/tauri)
       gtk3
       nss

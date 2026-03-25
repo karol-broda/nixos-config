@@ -38,7 +38,7 @@ in {
   config = mkIf cfg.enable {
     hardware.bluetooth = {
       enable = true;
-      powerOnBoot = cfg.powerOnBoot;
+      inherit (cfg) powerOnBoot;
       settings = {
         General = {
           Experimental = cfg.experimental;

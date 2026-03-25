@@ -1,7 +1,7 @@
 {inputs, ...}: {
   _module.args = {
     username = "karolbroda";
-    theme = import ../lib/theme.nix {lib = inputs.nixpkgs.lib;};
+    theme = import ../lib/theme.nix {inherit (inputs.nixpkgs) lib;};
 
     mkPkgsUnstable = system:
       import inputs.nixpkgs-unstable {

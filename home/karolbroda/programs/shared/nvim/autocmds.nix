@@ -1,4 +1,4 @@
-{...}: let
+_: let
   # shorthand for the verbose autocmd shape
   autocmd = event: pattern: desc: callback: {
     inherit event pattern desc;

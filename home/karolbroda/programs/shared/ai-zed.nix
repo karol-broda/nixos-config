@@ -1,4 +1,4 @@
-{...}: {
+_: {
   programs.zed-editor.userSettings = {
     assistant = {
       enabled = true;
