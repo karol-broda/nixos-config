@@ -53,6 +53,7 @@ in {
     pkgs-unstable.code-cursor
 
     taskwarrior3
+    attic-client
   ];
 
   home.file = {
