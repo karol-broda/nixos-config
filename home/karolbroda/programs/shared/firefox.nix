@@ -1,16 +1,17 @@
-{
-  pkgs,
-  lib,
-  platformOpts,
-  ...
-}: let
+{ pkgs
+, lib
+, platformOpts
+, ...
+}:
+let
   inherit (platformOpts) isLinux whenLinux;
 
   linuxSettings = whenLinux {
     "widget.use-xdg-desktop-portal.file-picker" = 1;
     "media.ffmpeg.vaapi.enabled" = true;
   };
-in {
+in
+{
   programs.firefox = {
     enable = true;
     package = pkgs.firefox;
@@ -30,6 +31,7 @@ in {
           multi-account-containers
           react-devtools
           firefox-color
+          kagi-search
         ];
       };
 
@@ -65,8 +67,13 @@ in {
     policies = {
       DisablePocket = true;
       SearchEngines = {
-        Default = "Google";
+        Default = "Kagi";
         Add = [
+          {
+            Name = "Kagi";
+            URLTemplate = "https://kagi.com/search?q={searchTerms}";
+            IconURL = "https://kagi.com/favicon.ico";
+          }
           {
             Name = "nix packages";
             Alias = "@nix";
@@ -80,7 +87,7 @@ in {
           {
             Name = "npm";
             Alias = "@npm";
-            URLTemplate = "https://www.npmjs.com/search?q={searchTerms}";
+            URLTemplate = "https://npmx.dev/search?q={searchTerms}";
           }
           {
             Name = "phosphor icons";
@@ -96,9 +103,9 @@ in {
     enable = true;
 
     defaultApplications = {
-      "text/html" = ["firefox.desktop"];
-      "x-scheme-handler/http" = ["firefox.desktop"];
-      "x-scheme-handler/https" = ["firefox.desktop"];
+      "text/html" = [ "firefox.desktop" ];
+      "x-scheme-handler/http" = [ "firefox.desktop" ];
+      "x-scheme-handler/https" = [ "firefox.desktop" ];
     };
   };
 }
