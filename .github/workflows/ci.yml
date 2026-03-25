@@ -20,6 +20,8 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@c5a866b6ab867e88becbed4467b93592bce69f8a # v21
 
       - uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
+        with:
+          use-flakehub: false
 
       - name: Lint (deadnix, formatter, statix)
         run: |
@@ -69,20 +71,25 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@c5a866b6ab867e88becbed4467b93592bce69f8a # v21
 
       - uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
+        with:
+          use-flakehub: false
 
       - name: Build NixOS system closure
         run: |
           nix build .#nixosConfigurations.nixos.config.system.build.toplevel \
-            --print-build-logs
+            --print-build-logs \
+            --keep-going
 
       - name: Push to attic
+        if: always()
         env:
           ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
         run: |
           nix run nixpkgs#attic-client -- \
             login default https://cache.karolbroda.com "$ATTIC_TOKEN"
-          nix run nixpkgs#attic-client -- \
-            push nixos result -j 4
+          if [ -L result ]; then
+            nix run nixpkgs#attic-client -- push nixos result -j 4
+          fi
 
   open-issue-on-failure:
     name: Open issue on master failure
