@@ -135,6 +135,7 @@ jobs:
       - name: Open issue if none already open
         env:
           GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           existing=$(gh issue list --label "broken-build" --state open --json number --jq '.[0].number')
           if [ -z "$existing" ]; then
@@ -142,8 +143,8 @@ jobs:
               --title "flake update broke build ($(date '+%Y-%m-%d'))" \
               --body "the automated flake update failed to build the nixos configuration.
 
-**workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          **workflow run:** $RUN_URL
 
-check the run logs to find which input caused the breakage." \
+          check the run logs to find which input caused the breakage." \
               --label "broken-build,flake-update"
           fi

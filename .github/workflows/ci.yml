@@ -64,6 +64,8 @@ jobs:
       - name: Open issue if none already open
         env:
           GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
           existing=$(gh issue list --label "broken-build" --state open --json number --jq '.[0].number')
           if [ -z "$existing" ]; then
@@ -71,7 +73,7 @@ jobs:
               --title "ci: check failed on master ($(date '+%Y-%m-%d'))" \
               --body "the CI check failed on the master branch.
 
-**workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-**commit:** ${{ github.sha }}" \
+          **workflow run:** $RUN_URL
+          **commit:** $COMMIT_SHA" \
               --label "broken-build"
           fi
