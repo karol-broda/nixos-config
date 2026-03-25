@@ -21,8 +21,16 @@ jobs:
 
       - uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: nix flake check
-        run: nix flake check --print-build-logs
+      - name: Lint (deadnix, formatter, statix)
+        run: |
+          nix build \
+            .#checks.x86_64-linux.deadnix \
+            .#checks.x86_64-linux.nix-fmt \
+            .#checks.x86_64-linux.statix \
+            --print-build-logs
+
+      - name: Evaluate NixOS configuration
+        run: nix eval .#nixosConfigurations.nixos.config.system.build.toplevel --raw
 
       - name: Build plan (dry run)
         if: github.event_name == 'pull_request'
