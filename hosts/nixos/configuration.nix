@@ -101,7 +101,7 @@
     packages = {
       enable = true;
       extraPackages = [
-        pkgs-old-working.modrinth-app
+        pkgs.modrinth-app
         (pkgs.callPackage ../../pkgs/hytale-launcher {})
       ];
     };

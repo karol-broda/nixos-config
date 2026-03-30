@@ -30,7 +30,6 @@ in {
           nil
           age
           openssl
-          spacetimedb
         ]
         ++ lib.optionals isLinux [
           ncurses

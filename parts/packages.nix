@@ -16,7 +16,6 @@
     packages =
       {
         phosphor-icons = overlaid.phosphorIcons;
-        inherit (overlaid) spacetimedb;
       }
       // lib.optionalAttrs overlaid.stdenv.hostPlatform.isLinux {
         hytale-launcher = pkgsUnfree.callPackage ../pkgs/hytale-launcher {};

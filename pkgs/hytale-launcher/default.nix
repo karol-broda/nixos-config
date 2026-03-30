@@ -37,6 +37,15 @@
     then hytaleHashes
     else sources.hashes;
 
+  os =
+    if stdenv.hostPlatform.system == "x86_64-linux"
+    then "linux"
+    else "darwin";
+  arch =
+    if stdenv.hostPlatform.system == "x86_64-linux"
+    then "amd64"
+    else "arm64";
+
   # TODO: add icon once a stable versioned source is available
   desktopItem = makeDesktopItem {
     name = "hytale-launcher";
@@ -48,15 +57,6 @@
     startupWMClass = "com.hypixel.HytaleLauncher";
   };
 
-  os =
-    if stdenv.hostPlatform.system == "x86_64-linux"
-    then "linux"
-    else "darwin";
-  arch =
-    if stdenv.hostPlatform.system == "x86_64-linux"
-    then "amd64"
-    else "arm64";
-
   src = fetchzip {
     url = "https://launcher.hytale.com/builds/release/${os}/${arch}/hytale-launcher-${finalVersion}.zip";
     hash =
@@ -65,12 +65,37 @@
     stripRoot = false;
   };
 
+  meta = {
+    description = "Official launcher for Hytale";
+    longDescription = ''
+      Official launcher for Hytale, an upcoming block-based game from Hypixel Studios.
+
+      Note: The launcher's built-in auto-update mechanism will not work on NixOS
+      due to the immutable nature of the Nix store. You may see an error message
+      about "failed to remove existing executable: read-only file system", this
+      is expected and the launcher will continue to work. Updates must be applied
+      by updating the nixpkgs package.
+    '';
+    homepage = "https://hytale.com";
+    license = lib.licenses.unfree;
+    maintainers = with lib.maintainers; [
+      gepbird
+      karol-broda
+      liquidnya
+    ];
+    mainProgram = "hytale-launcher";
+    platforms = [
+      "x86_64-linux"
+      "aarch64-darwin"
+    ];
+    sourceProvenance = with lib.sourceTypes; [binaryNativeCode];
+  };
+
   fhsEnv = buildFHSEnv {
     pname = "hytale-launcher";
     version = finalVersion;
 
     targetPkgs = _pkgs: [
-      # launcher dependencies (webkit/tauri)
       gtk3
       nss
       libsecret
@@ -79,20 +104,15 @@
       glib
       webkitgtk_4_1
       xdg-utils
-      # graphics
       libGL
-      # audio
       alsa-lib
-      # input/display
       udev
       libx11
       libxcursor
       libxrandr
       libxi
-      # .NET runtime dependencies :(
       icu
       openssl
-      # misc
       stdenv.cc.cc.lib
     ];
 
@@ -101,7 +121,6 @@
     extraBwrapArgs = [
       "--setenv __NV_DISABLE_EXPLICIT_SYNC 1"
       "--setenv WEBKIT_DISABLE_DMABUF_RENDERER 1"
-      # taken from the flatpak at https://launcher.hytale.com/builds/release/linux/amd64/hytale-launcher-latest.flatpak
       "--setenv WEBKIT_DISABLE_COMPOSITING_MODE 1"
       "--setenv DESKTOP_STARTUP_ID com.hypixel.HytaleLauncher"
       "--setenv JAVA_HOME ${temurin-bin-25}"
@@ -117,31 +136,7 @@
       updateScript = ./update.sh;
     };
 
-    meta = {
-      description = "Official launcher for Hytale";
-      longDescription = ''
-        Official launcher for Hytale, an upcoming block-based game from Hypixel Studios.
-
-        Note: The launcher's built-in auto-update mechanism will not work on NixOS
-        due to the immutable nature of the Nix store. You may see an error message
-        about "failed to remove existing executable: read-only file system", this
-        is expected and the launcher will continue to work. Updates must be applied
-        by updating the nixpkgs package.
-      '';
-      homepage = "https://hytale.com";
-      license = lib.licenses.unfree;
-      maintainers = with lib.maintainers; [
-        gepbird
-        karol-broda
-        liquidnya
-      ];
-      mainProgram = "hytale-launcher";
-      platforms = [
-        "x86_64-linux"
-        "aarch64-darwin"
-      ];
-      sourceProvenance = with lib.sourceTypes; [binaryNativeCode];
-    };
+    inherit meta;
   };
 
   darwinPackage = stdenv.mkDerivation {
@@ -159,7 +154,12 @@
       runHook postInstall
     '';
 
-    inherit (fhsEnv) passthru meta;
+    passthru = {
+      inherit src;
+      updateScript = ./update.sh;
+    };
+
+    inherit meta;
   };
 in
   if stdenv.hostPlatform.isDarwin
