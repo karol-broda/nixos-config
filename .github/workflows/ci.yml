@@ -17,12 +17,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: DeterminateSystems/nix-installer-action@c5a866b6ab867e88becbed4467b93592bce69f8a # v21
-
-      - uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
+      - uses: cachix/install-nix-action@4eae8bea4afaa8f8ea8aa638ab9a7fead2f3d21e # v31
         with:
-          use-flakehub: false
-          upstream-cache: https://cache.karolbroda.com/nixos
+          extra_nix_config: |
+            extra-substituters = https://cache.karolbroda.com/nixos https://nix-community.cachix.org https://hyprland.cachix.org https://cache.numtide.com
+            extra-trusted-public-keys = nixos:fRVFLw3mNj5aX9OJaqFsRCrPGD26QazTeUnetsBpUQI= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
+
+      - uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7
+        with:
+          primary-key: nix-${{ runner.os }}-check-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-check-
 
       - name: Lint (deadnix, formatter, statix)
         run: |
@@ -69,12 +73,17 @@ jobs:
           sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
           df -h
 
-      - uses: DeterminateSystems/nix-installer-action@c5a866b6ab867e88becbed4467b93592bce69f8a # v21
-
-      - uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
+      - uses: cachix/install-nix-action@4eae8bea4afaa8f8ea8aa638ab9a7fead2f3d21e # v31
         with:
-          use-flakehub: false
-          upstream-cache: https://cache.karolbroda.com/nixos
+          extra_nix_config: |
+            extra-substituters = https://cache.karolbroda.com/nixos https://nix-community.cachix.org https://hyprland.cachix.org https://cache.numtide.com
+            extra-trusted-public-keys = nixos:fRVFLw3mNj5aX9OJaqFsRCrPGD26QazTeUnetsBpUQI= nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs= hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc= niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g=
+
+      - uses: nix-community/cache-nix-action@7df957e333c1e5da7721f60227dbba6d06080569 # v7
+        with:
+          primary-key: nix-${{ runner.os }}-build-${{ hashFiles('flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-build-
+          gc-max-store-size-linux: 8000000000 # 8 GB
 
       - name: Build NixOS system closure
         run: |
