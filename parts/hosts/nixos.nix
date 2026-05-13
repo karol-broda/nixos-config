@@ -17,8 +17,8 @@
     inherit (inputs.elephant.packages.${system}) elephant-providers;
     wallpaper-source = ../../providers/wallpaper;
   };
-in {
-  flake.nixosConfigurations.nixos = builders.mkNixosHost {
+
+  nixosHostArgs = {
     hostname = "nixos";
     inherit system;
     specialArgs = {
@@ -53,4 +53,8 @@ in {
       pkgs-unstable = mkPkgsUnstable system;
     };
   };
+in {
+  _module.args.nixosHostArgs = nixosHostArgs;
+
+  flake.nixosConfigurations.nixos = builders.mkNixosHost nixosHostArgs;
 }

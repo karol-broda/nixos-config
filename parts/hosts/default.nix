@@ -2,6 +2,7 @@
   imports = [
     ./nixos.nix
     ./darwin.nix
+    ./iso.nix
   ];
 
   _module.args = {

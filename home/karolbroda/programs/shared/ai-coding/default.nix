@@ -28,10 +28,8 @@ in {
 
     packages = [
       llm-agents.claude-code-acp
-      llm-agents.agent-deck
       pkgs.tmux
       llm-agents.ccstatusline
-      llm-agents.entire
       # llm-agents.openskills  # hash mismatch in upstream flake
       # inputs.workmux.packages.${pkgs.stdenv.hostPlatform.system}.default  # shell completion build failure upstream
       mcp-servers.mcp-server-fetch

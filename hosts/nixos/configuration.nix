@@ -1,8 +1,4 @@
-{
-  pkgs,
-  pkgs-old-working,
-  ...
-}: {
+{pkgs, ...}: {
   imports = [
     ./hardware-configuration.nix
   ];

@@ -98,6 +98,7 @@ in {
           experimental-features = cfg.experimentalFeatures;
           substituters = cfg.substituters ++ cfg.extraSubstituters;
           trusted-public-keys = cfg.trustedPublicKeys ++ cfg.extraTrustedPublicKeys;
+          trusted-users = ["root" "@wheel"];
         };
 
         gc = {

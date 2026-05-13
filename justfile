@@ -69,7 +69,7 @@ rollback:
     sudo nixos-rebuild --rollback switch
 
 iso:
-    nix build ".#nixosConfigurations.{{nixos}}.config.system.build.isoImage" --print-build-logs
+    nix build ".#nixosConfigurations.iso.config.system.build.isoImage" --print-build-logs
     @echo "iso: $(ls result/iso/*.iso)"
 
 pkg name:
