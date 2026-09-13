@@ -16,8 +16,6 @@
       inputs.nixpkgs.follows = "nixpkgs-darwin";
     };
 
-    hyprnix.url = "github:hyprwm/hyprnix";
-
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -77,10 +75,6 @@
       url = "github:numtide/llm-agents.nix";
     };
 
-    mcp-servers = {
-      url = "github:natsukium/mcp-servers-nix";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
   };
 
   nixConfig = {

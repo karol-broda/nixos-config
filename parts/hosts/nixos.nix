@@ -9,8 +9,10 @@
 }: let
   inherit (inputs.self.lib.personal) builders;
   system = "x86_64-linux";
-  pkgs-hypr = {
-    inherit (inputs.hyprnix.packages.${system}) hyprland xdg-desktop-portal-hyprland hyprlock hyprpaper;
+  pkgs-hypr = let
+    pkgs = mkPkgsUnstable system;
+  in {
+    inherit (pkgs) hyprland xdg-desktop-portal-hyprland hyprlock hyprpaper;
   };
   elephant-wallpaper-provider = import ../../pkgs/elephant-wallpaper-provider.nix {
     inherit (inputs.elephant.packages.${system}) elephant-providers;

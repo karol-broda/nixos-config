@@ -4,8 +4,6 @@
   ...
 }: let
   llm-agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
-  mcp-servers = inputs.mcp-servers.packages.${pkgs.stdenv.hostPlatform.system};
-
   wtsFunc = ''
     wts() {
       local selected
@@ -31,8 +29,8 @@ in {
       # llm-agents.ccstatusline
       llm-agents.codex
       # inputs.workmux.packages.${pkgs.stdenv.hostPlatform.system}.default  # shell completion build failure upstream
-      mcp-servers.mcp-server-fetch
-      mcp-servers.mcp-server-filesystem
+      pkgs.mcp-server-fetch
+      pkgs.mcp-server-filesystem
       # pkgs.fabric-ai
     ];
 
