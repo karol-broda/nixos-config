@@ -3,6 +3,7 @@ _: {
     enable = true;
     package = null;
     portalPackage = null;
+    configType = "hyprlang";
     settings = {
       "$rosewater" = "rgb(dc8a78)";
       "$rosewaterAlpha" = "dc8a78";
@@ -154,7 +155,6 @@ _: {
 
       misc = {
         disable_hyprland_logo = true;
-        vfr = true;
         focus_on_activate = true;
       };
 

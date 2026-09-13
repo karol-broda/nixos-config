@@ -8,16 +8,5 @@
         inherit system;
         config.allowUnfree = true;
       };
-
-    mkPkgsOldWorking = system:
-      import inputs.nixpkgs-old-working {
-        inherit system;
-        config = {
-          allowUnfree = true;
-          permittedInsecurePackages = [
-            "libxml2-2.13.8"
-          ];
-        };
-      };
   };
 }

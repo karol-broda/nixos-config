@@ -3,7 +3,6 @@
   username,
   theme,
   mkPkgsUnstable,
-  mkPkgsOldWorking,
   commonOverlays,
   sharedHomeModules,
   ...
@@ -24,7 +23,6 @@
     specialArgs = {
       inherit username pkgs-hypr;
       pkgs-unstable = mkPkgsUnstable system;
-      pkgs-old-working = mkPkgsOldWorking system;
     };
     overlays =
       commonOverlays
@@ -36,7 +34,6 @@
       ../../hosts/nixos/configuration.nix
       {
         nixpkgs.config.permittedInsecurePackages = [
-          "ciscoPacketTracer8-8.2.2"
           "olm-3.2.16"
         ];
       }

@@ -42,7 +42,7 @@ _: {
       should_launch_new_window = "1";
       check_for_updates_on_startup = "0";
       should_load_tutorial_when_no_other_file = "0";
-      startup_commands = "toggle_custom_color";
+      startup_commands = ["toggle_custom_color"];
 
       touchpad_sensitivity = "1.0";
       vertical_move_amount = "1.0";

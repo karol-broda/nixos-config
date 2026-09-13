@@ -111,7 +111,7 @@
           formatters = {
             nixpkgs_fmt.command = "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt";
             stylua.command = "${pkgs.stylua}/bin/stylua";
-            prettier.command = "${pkgs.nodePackages.prettier}/bin/prettier";
+            prettier.command = "${pkgs.prettier}/bin/prettier";
             black.command = "${pkgs.python3Packages.black}/bin/black";
             rustfmt.command = "${pkgs.rustfmt}/bin/rustfmt";
           };

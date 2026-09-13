@@ -89,7 +89,6 @@
     programs = {
       wireshark.enable = true;
       onepassword.enable = true;
-      packettracer.enable = true;
     };
 
     security.gnome-keyring.enable = true;

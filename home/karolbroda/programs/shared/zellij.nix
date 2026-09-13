@@ -9,6 +9,8 @@
     then "pbcopy"
     else "wl-copy";
 in {
+  catppuccin.zellij.enable = true;
+
   programs.zellij = {
     enable = true;
     package = pkgs-unstable.zellij;

@@ -1,8 +1,10 @@
-{
+{config, ...}: {
   catppuccin = {
     enable = true;
+    autoEnable = false;
     flavor = "frappe";
     accent = "lavender";
-    hyprlock.enable = false;
   };
+
+  gtk.gtk4.theme = config.gtk.theme;
 }

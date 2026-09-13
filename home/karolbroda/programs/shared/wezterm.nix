@@ -5,8 +5,6 @@
     then ''nh darwin switch ~/nix-config''
     else ''nh os switch ~/nix-config'';
 in {
-  catppuccin.wezterm.enable = true;
-
   programs.wezterm = {
     enable = true;
     enableZshIntegration = true;
@@ -15,7 +13,7 @@ in {
       local config = wezterm.config_builder()
       local act = wezterm.action
 
-      dofile(catppuccin_plugin).apply_to_config(config, catppuccin_config)
+      config.color_scheme = "Catppuccin Frappe"
 
       local colors = {
         lavender = "#babbf1",

@@ -2,9 +2,8 @@
   description = "karol's nix system (nixos + darwin)";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    nixpkgs-old-working.url = "github:NixOS/nixpkgs/20075955deac2583bb12f07151c2df830ef346b4";
     nixpkgs-darwin.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 
     flake-parts = {
@@ -20,7 +19,7 @@
     hyprnix.url = "github:hyprwm/hyprnix";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -37,7 +36,6 @@
     nur.url = "github:nix-community/NUR";
 
     spicetify-nix.url = "github:Gerg-L/spicetify-nix";
-    catppuccin.url = "github:catppuccin/nix";
     nixvim.url = "github:nix-community/nixvim";
 
     eza-themes = {
@@ -45,12 +43,8 @@
       flake = false;
     };
 
-    ripple = {
-      url = "github:Ripple-TS/ripple";
-      flake = false;
-    };
-
     catppuccin-userstyles.url = "github:catppuccin/userstyles";
+    catppuccin.url = "github:catppuccin/nix";
 
     nixcord.url = "github:KaylorBen/nixcord";
 
@@ -81,7 +75,6 @@
 
     llm-agents = {
       url = "github:numtide/llm-agents.nix";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     mcp-servers = {

@@ -13,7 +13,7 @@ in {
 
     package = mkOption {
       type = types.package;
-      default = pkgs.docker_28;
+      default = pkgs.docker_29;
       description = "docker package to use";
     };
 

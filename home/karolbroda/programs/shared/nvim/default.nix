@@ -12,7 +12,6 @@ in {
     ./plugins
     ./lsp.nix
     ./autocmds.nix
-    ./ai.nix
   ];
 
   programs.nixvim = {
@@ -38,7 +37,6 @@ in {
         };
         default_integrations = true;
         integrations = {
-          avante = true;
           blink_cmp = true;
           diffview = true;
           fidget = true;
@@ -82,10 +80,6 @@ in {
               TroubleNormal = { bg = "NONE" },
               NoiceCmdlinePopup = { bg = "NONE" },
               NoiceCmdlinePopupBorder = { bg = "NONE" },
-              AvanteNormal = { bg = "NONE" },
-              AvanteSidebar = { bg = "NONE" },
-              AvanteSidebarNormal = { bg = "NONE" },
-              AvanteInput = { bg = "NONE" },
             }
           end
         '';

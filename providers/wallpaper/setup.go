@@ -59,18 +59,7 @@ const (
 func Setup() {
 	start := time.Now()
 
-	config = &Config{
-		Config: common.Config{
-			Icon:     "image-x-generic",
-			MinScore: 30,
-		},
-		Directory:  "~/Pictures/Wallpapers",
-		Extensions: []string{".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"},
-		SetCommand: "hyprctl hyprpaper wallpaper ',%FILE%'",
-		Recursive:  true,
-	}
-
-	common.LoadConfig(Name, config)
+	LoadConfig()
 
 	if config.NamePretty != "" {
 		NamePretty = config.NamePretty
@@ -83,6 +72,21 @@ func Setup() {
 	scanWallpapers()
 
 	slog.Info(Name, "wallpapers", len(items), "time", time.Since(start))
+}
+
+func LoadConfig() {
+	config = &Config{
+		Config: common.Config{
+			Icon:     "image-x-generic",
+			MinScore: 30,
+		},
+		Directory:  "~/Pictures/Wallpapers",
+		Extensions: []string{".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"},
+		SetCommand: "hyprctl hyprpaper wallpaper ',%FILE%'",
+		Recursive:  true,
+	}
+
+	common.LoadConfig(Name, config)
 }
 
 func Available() bool {
@@ -289,10 +293,13 @@ func HideFromProviderlist() bool {
 	return config.HideFromProviderlist
 }
 
-func PrintDoc() {
-	fmt.Println(readme)
-	fmt.Println()
-	util.PrintConfig(Config{}, Name)
+func PrintDoc(write bool) {
+	if !write {
+		fmt.Println(readme)
+		fmt.Println()
+	}
+
+	util.PrintConfig(Config{}, Name, write)
 }
 
 func State(provider string) *pb.ProviderStateResponse {

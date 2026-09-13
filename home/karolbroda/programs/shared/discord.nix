@@ -24,8 +24,8 @@ _: {
         experiments.enable = true;
 
         betterUploadButton.enable = true;
-        ClearURLs.enable = true;
-        CopyUserURLs.enable = true;
+        clearUrls.enable = true;
+        copyUserUrls.enable = true;
         fakeNitro = {
           enable = true;
           enableEmojiBypass = true;
@@ -34,7 +34,6 @@ _: {
         favoriteEmojiFirst.enable = true;
         fixSpotifyEmbeds.enable = true;
         fixYoutubeEmbeds.enable = true;
-        friendsSince.enable = true;
         imageZoom.enable = true;
         messageClickActions = {
           enable = true;
@@ -76,7 +75,7 @@ _: {
         sendTimestamps.enable = true;
         voiceMessages.enable = true;
         voiceDownload.enable = true;
-        USRBG.enable = true;
+        usrbg.enable = true;
         decor.enable = true;
         shikiCodeblocks.enable = true;
         betterSettings.enable = true;

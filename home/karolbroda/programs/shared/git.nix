@@ -16,6 +16,8 @@
     then "~/Library/Group\\ Containers/2BUA8C4S2C.com.1password/t/agent.sock"
     else "~/.1password/agent.sock";
 in {
+  catppuccin.delta.enable = true;
+
   programs = {
     delta = {
       enable = true;
@@ -51,12 +53,11 @@ in {
     ssh = {
       enable = true;
       enableDefaultConfig = false;
+      includes = ["~/.ssh/1Password/config"];
 
-      matchBlocks."*" = {
+      settings."*" = {
         identityAgent = agentSocket;
-        extraOptions = {
-          AddKeysToAgent = "yes";
-        };
+        addKeysToAgent = "yes";
       };
     };
   };

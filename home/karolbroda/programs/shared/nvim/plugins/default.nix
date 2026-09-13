@@ -7,6 +7,5 @@
     ./git.nix
     ./treesitter.nix
     ./telescope.nix
-    ./ripple.nix
   ];
 }
