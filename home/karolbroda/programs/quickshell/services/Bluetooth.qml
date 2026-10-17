@@ -1,130 +1,67 @@
 pragma Singleton
 
+import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
-import QtQuick
 
 Singleton {
     id: root
 
-    readonly property var adapter: Bluetooth.defaultAdapter ?? null
-
-    readonly property bool ready: adapter !== null && adapter !== undefined
-    readonly property bool enabled: ready && adapter.enabled === true
-    readonly property bool discovering: ready && adapter.discovering === true
-
-    readonly property var connectedDevices: {
-        if (!ready) return []
-        var result = []
-        var devs = Bluetooth.devices.values
-        for (var i = 0; i < devs.length; i++) {
-            if (devs[i] !== null && devs[i] !== undefined && devs[i].connected === true) {
-                result.push(devs[i])
-            }
-        }
-        return result
-    }
-
-    readonly property var pairedDevices: {
-        if (!ready) return []
-        var result = []
-        var devs = Bluetooth.devices.values
-        for (var i = 0; i < devs.length; i++) {
-            if (devs[i] !== null && devs[i] !== undefined && devs[i].paired === true && devs[i].connected !== true) {
-                result.push(devs[i])
-            }
-        }
-        return result
-    }
-
-    readonly property var deviceModel: {
-        if (!ready) return []
-        return Bluetooth.devices.values
-    }
+    readonly property var _backend: Bluetooth
+    readonly property var adapter: _backend.defaultAdapter ?? null
+    readonly property bool ready: adapter !== null
+    readonly property bool enabled: adapter?.enabled ?? false
+    readonly property bool discovering: adapter?.discovering ?? false
+    readonly property list<BluetoothDevice> devices: adapter?.devices.values ?? []
+    readonly property list<BluetoothDevice> connectedDevices: devices.filter(d => d.connected)
+    readonly property list<BluetoothDevice> knownDevices: devices
+        .filter(d => d.name.trim() !== "" && (d.connected || d.paired || d.trusted || d.bonded))
+        .sort((a, b) => Number(b.connected) - Number(a.connected) || a.name.localeCompare(b.name))
 
     readonly property string icon: {
-        if (!ready) return "bluetooth"
-        if (!enabled) return "bluetooth-slash"
-        if (connectedDevices.length > 0) return "bluetooth-connected"
-        return "bluetooth"
+        if (!enabled) return ready ? "bluetooth-slash" : "bluetooth"
+        return connectedDevices.length > 0 ? "bluetooth-connected" : "bluetooth"
     }
 
     readonly property string statusText: {
         if (!enabled) return "Off"
         if (connectedDevices.length === 1) return connectedDevices[0].name || "Connected"
-        if (connectedDevices.length > 1) return connectedDevices.length + " connected"
-        return "On"
+        return connectedDevices.length > 1 ? connectedDevices.length + " connected" : "On"
     }
 
-    reloadableId: "bluetooth"
-
     function togglePower(): void {
-        if (adapter !== null && adapter !== undefined) {
-            adapter.enabled = !adapter.enabled
-        }
+        if (root.adapter) root.adapter.enabled = !root.adapter.enabled
     }
 
     function toggleDiscovery(): void {
-        if (adapter !== null && adapter !== undefined) {
-            adapter.discovering = !adapter.discovering
-        }
+        if (root.adapter) root.adapter.discovering = !root.adapter.discovering
     }
 
-    function startDiscovery(): void {
-        if (adapter !== null && adapter !== undefined) {
-            adapter.discovering = true
-        }
+    function toggleDevice(device: BluetoothDevice): void {
+        if (device && root.devices.includes(device)) device.connected = !device.connected
     }
 
-    function stopDiscovery(): void {
-        if (adapter !== null && adapter !== undefined) {
-            adapter.discovering = false
-        }
+    function deviceStatus(device: BluetoothDevice): string {
+        if (device?.connected) return "Connected"
+        if (device?.paired) return "Paired"
+        if (device?.trusted) return "Trusted"
+        return device?.bonded ? "Bonded" : ""
     }
 
-    function connectDevice(device): void {
-        if (device !== null && device !== undefined) {
-            device.connected = true
-        }
-    }
-
-    function disconnectDevice(device): void {
-        if (device !== null && device !== undefined) {
-            device.connected = false
-        }
-    }
-
-    function toggleDevice(device): void {
-        if (device !== null && device !== undefined) {
-            device.connected = !device.connected
-        }
-    }
-
-    function deviceIcon(iconName): string {
-        if (iconName === null || iconName === undefined) return "bluetooth"
+    function deviceIcon(iconName: string): string {
         switch (iconName) {
-            case "audio-headphones":
-            case "audio-headset":
-                return "headphones"
-            case "audio-card":
-            case "audio-speakers":
-                return "speaker-high"
-            case "input-keyboard":
-                return "keyboard"
-            case "input-mouse":
-                return "mouse"
-            case "input-gaming":
-                return "game-controller"
-            case "input-tablet":
-                return "device-tablet"
-            case "phone":
-                return "device-mobile-speaker"
-            case "computer":
-                return "laptop"
-            case "video-display":
-                return "monitor"
-            default:
-                return "bluetooth"
+        case "audio-headphones":
+        case "audio-headset": return "headphones"
+        case "audio-card":
+        case "audio-speakers": return "speaker-high"
+        case "input-keyboard": return "keyboard"
+        case "input-mouse": return "mouse"
+        case "input-gaming": return "game-controller"
+        case "input-tablet": return "device-tablet"
+        case "phone": return "device-mobile-speaker"
+        case "computer": return "laptop"
+        case "video-display": return "monitor"
+        default: return "bluetooth"
         }
     }
 }

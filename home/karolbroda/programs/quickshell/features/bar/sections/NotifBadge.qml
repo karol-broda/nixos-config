@@ -1,24 +1,21 @@
 import QtQuick
 import qs.theme
-import qs.core
 import qs.services
-import qs.widgets.buttons
 import qs.widgets.indicators
 
 Item {
     id: root
 
+    property var screen: null
+
     implicitWidth: Spacing.barHeight - 4
     implicitHeight: Spacing.barHeight - 4
 
-    IconButton {
+    PanelButton {
         anchors.fill: parent
+        panel: "notifications"
         icon: "bell"
-        iconSize: Spacing.iconMd
-
-        onClicked: {
-            Dispatcher.dispatch(Actions.togglePanel("notifications"))
-        }
+        screen: root.screen
     }
 
     Badge {
@@ -26,11 +23,6 @@ Item {
         anchors.right: parent.right
         anchors.topMargin: 2
         anchors.rightMargin: 2
-        count: {
-            if (Notifs.list === null || Notifs.list === undefined) {
-                return 0
-            }
-            return Notifs.list.length
-        }
+        count: Notifs.count
     }
 }

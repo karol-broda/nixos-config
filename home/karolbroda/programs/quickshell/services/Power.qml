@@ -2,130 +2,53 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
 import Quickshell.Services.UPower
 
 Singleton {
     id: root
 
-    readonly property bool available: true
     readonly property bool hasPerformance: PowerProfiles.hasPerformanceProfile
     readonly property int profile: PowerProfiles.profile
-    readonly property bool isPerformance: profile === PowerProfile.Performance
-    readonly property bool isBalanced: profile === PowerProfile.Balanced
-    readonly property bool isPowerSaver: profile === PowerProfile.PowerSaver
 
-    readonly property string icon: {
-        if (profile === PowerProfile.Performance) {
-            return "rocket-launch";
-        }
-        if (profile === PowerProfile.PowerSaver) {
-            return "leaf";
-        }
-        return "scales";
+    readonly property string icon: iconForProfile(profile)
+    readonly property string profileName: nameForProfile(profile)
+
+    function iconForProfile(p: int): string {
+        if (p === PowerProfile.Performance) return "rocket-launch"
+        if (p === PowerProfile.PowerSaver) return "leaf"
+        return "scales"
     }
 
-    readonly property string profileName: {
-        if (profile === PowerProfile.Performance) {
-            return "performance";
-        }
-        if (profile === PowerProfile.PowerSaver) {
-            return "power saver";
-        }
-        return "balanced";
+    function nameForProfile(p: int): string {
+        if (p === PowerProfile.Performance) return "performance"
+        if (p === PowerProfile.PowerSaver) return "power saver"
+        return "balanced"
     }
 
-    readonly property string profileDescription: {
-        if (profile === PowerProfile.Performance) {
-            return "maximum performance";
-        }
-        if (profile === PowerProfile.PowerSaver) {
-            return "extended battery life";
-        }
-        return "balance of power and performance";
+    function setProfile(p: int): void {
+        if (p === PowerProfile.Performance && !root.hasPerformance) return
+        PowerProfiles.profile = p
     }
 
-    function setPerformance() {
-        if (hasPerformance) {
-            PowerProfiles.profile = PowerProfile.Performance;
-        }
+    function cycleProfile(): void {
+        if (profile === PowerProfile.PowerSaver) setProfile(PowerProfile.Balanced)
+        else if (profile === PowerProfile.Balanced && hasPerformance) setProfile(PowerProfile.Performance)
+        else setProfile(PowerProfile.PowerSaver)
     }
 
-    function setBalanced() {
-        PowerProfiles.profile = PowerProfile.Balanced;
+    function logout(): void {
+        Hypr.exit()
     }
 
-    function setPowerSaver() {
-        PowerProfiles.profile = PowerProfile.PowerSaver;
+    function suspend(): void {
+        Env.launch(["systemctl", "suspend"])
     }
 
-    function cycleProfile() {
-        if (profile === PowerProfile.PowerSaver) {
-            setBalanced();
-        } else if (profile === PowerProfile.Balanced) {
-            if (hasPerformance) {
-                setPerformance();
-            } else {
-                setPowerSaver();
-            }
-        } else {
-            setPowerSaver();
-        }
+    function reboot(): void {
+        Env.launch(["systemctl", "reboot"])
     }
 
-    function iconForProfile(p) {
-        if (p === PowerProfile.Performance) {
-            return "rocket-launch";
-        }
-        if (p === PowerProfile.PowerSaver) {
-            return "leaf";
-        }
-        return "scales";
-    }
-
-    function nameForProfile(p) {
-        if (p === PowerProfile.Performance) {
-            return "performance";
-        }
-        if (p === PowerProfile.PowerSaver) {
-            return "power saver";
-        }
-        return "balanced";
-    }
-
-    function logout() {
-        logoutProc.running = true;
-    }
-
-    function suspend() {
-        suspendProc.running = true;
-    }
-
-    function reboot() {
-        rebootProc.running = true;
-    }
-
-    function shutdown() {
-        shutdownProc.running = true;
-    }
-
-    Process {
-        id: logoutProc
-        command: ["hyprctl", "dispatch", "exit"]
-    }
-
-    Process {
-        id: suspendProc
-        command: ["systemctl", "suspend"]
-    }
-
-    Process {
-        id: rebootProc
-        command: ["systemctl", "reboot"]
-    }
-
-    Process {
-        id: shutdownProc
-        command: ["systemctl", "poweroff"]
+    function shutdown(): void {
+        Env.launch(["systemctl", "poweroff"])
     }
 }

@@ -3,25 +3,21 @@ import qs.theme
 import qs.widgets.text
 import qs.widgets.icons
 
-Item {
+ButtonBase {
     id: root
 
     property string icon: ""
     property string label: ""
     property bool isOn: false
-    property bool enabled: true
-    property alias hovered: mouseArea.containsMouse
 
     signal toggled()
 
     implicitWidth: 72
     implicitHeight: 64
-    opacity: enabled ? 1.0 : 0.5
 
     Rectangle {
-        id: background
         anchors.fill: parent
-        radius: Spacing.radiusMd
+        radius: Spacing.radiusInner
         color: {
             if (root.isOn) {
                 return Colors.withAlpha(Colors.accent, root.hovered ? 0.25 : 0.2)
@@ -56,16 +52,5 @@ Item {
         }
     }
 
-    MouseArea {
-        id: mouseArea
-        anchors.fill: parent
-        hoverEnabled: root.enabled
-        cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-
-        onClicked: {
-            if (root.enabled) {
-                root.toggled()
-            }
-        }
-    }
+    onClicked: root.toggled()
 }

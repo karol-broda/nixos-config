@@ -1,31 +1,17 @@
 import QtQuick
 import Quickshell
-import Quickshell.Wayland
-
 import qs.features.lockscreen
 
 ShellRoot {
     id: root
 
-    LockContext {
-        id: lockContext
+    property bool done: false
 
+    LockScreen {
+        locked: !root.done
         onUnlocked: {
-            lock.locked = false
+            root.done = true
             Qt.quit()
-        }
-    }
-
-    WlSessionLock {
-        id: lock
-
-        locked: true
-
-        WlSessionLockSurface {
-            LockSurface {
-                anchors.fill: parent
-                context: lockContext
-            }
         }
     }
 }

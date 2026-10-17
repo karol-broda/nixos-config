@@ -1,0 +1,3 @@
+module qs.features.overlay
+
+ScreenOverlay ScreenOverlay.qml

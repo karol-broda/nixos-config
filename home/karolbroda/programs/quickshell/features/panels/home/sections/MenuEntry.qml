@@ -7,37 +7,12 @@ Item {
 
     required property var modelData
 
-    readonly property bool isSep: {
-        if (modelData === null || modelData === undefined) return false
-        return modelData.isSeparator === true
-    }
-
-    readonly property string label: {
-        if (modelData === null || modelData === undefined) return ""
-        if (modelData.text === null || modelData.text === undefined) return ""
-        return modelData.text
-    }
-
-    readonly property bool isEnabled: {
-        if (modelData === null || modelData === undefined) return false
-        return modelData.enabled !== false
-    }
-
-    readonly property bool isCheckable: {
-        if (modelData === null || modelData === undefined) return false
-        var bt = modelData.buttonType
-        return bt !== null && bt !== undefined && bt !== 0
-    }
-
-    readonly property bool isChecked: {
-        if (modelData === null || modelData === undefined) return false
-        return modelData.checkState === Qt.Checked
-    }
-
-    readonly property bool hasSub: {
-        if (modelData === null || modelData === undefined) return false
-        return modelData.hasChildren === true
-    }
+    readonly property bool isSep: modelData.isSeparator === true
+    readonly property string label: modelData.text ?? ""
+    readonly property bool isEnabled: modelData.enabled !== false
+    readonly property bool isCheckable: (modelData.buttonType ?? 0) !== 0
+    readonly property bool isChecked: modelData.checkState === Qt.Checked
+    readonly property bool hasSub: modelData.hasChildren === true
 
     signal triggered()
     signal subMenuRequested(real globalY)
@@ -68,7 +43,7 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         height: 28
-        radius: Spacing.radiusXs
+        radius: Spacing.radiusMenuItem
         color: rowMouse.containsMouse && root.isEnabled ? Colors.bgHover : "transparent"
         visible: root.isSep !== true
         opacity: root.isEnabled ? 1.0 : 0.4
@@ -128,8 +103,7 @@ Item {
             cursorShape: root.isEnabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
             onContainsMouseChanged: {
-                if (containsMouse !== true) return
-                if (root.isEnabled !== true) return
+                if (!containsMouse || !root.isEnabled) return
 
                 if (root.hasSub) {
                     var pos = rowRect.mapToItem(null, 0, 0)
@@ -140,8 +114,7 @@ Item {
             }
 
             onClicked: {
-                if (root.isEnabled !== true) return
-                if (root.modelData === null || root.modelData === undefined) return
+                if (!root.isEnabled) return
 
                 if (root.hasSub) {
                     var pos = rowRect.mapToItem(null, 0, 0)

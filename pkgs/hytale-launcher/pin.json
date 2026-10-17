@@ -1,7 +1,7 @@
 {
-  "version": "2026.09.10-d6a4226",
+  "version": "2026.09.21-909ac0c",
   "hashes": {
-    "x86_64-linux": "sha256-+QqbUJXLVKrZgzWgy337mABLGdtH3lRjF0yAi9o+R4U=",
-    "aarch64-darwin": "sha256-h/H4fh/ao1hpoCMlPT93xNi+BOGUoSpxTS/yLWX9kAQ="
+    "x86_64-linux": "sha256-84tEF15HFQwOKJW4MtuBTv2D0TEMWqOr9fK5jB/BeNc=",
+    "aarch64-darwin": "sha256-jmHmwwNe3Ur6uX3sONTsGjJU0nOdQIC15X5A139dzs8="
   }
 }

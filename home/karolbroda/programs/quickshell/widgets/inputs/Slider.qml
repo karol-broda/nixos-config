@@ -5,11 +5,15 @@ Item {
     id: root
 
     property real value: 0.5
-    property real minValue: 0.0
-    property real maxValue: 1.0
-    property bool enabled: true
+    property real minValue: 0
+    property real maxValue: 1
 
-    signal userValueChanged(real newValue)
+    signal moved(real value)
+
+    property real _dragValue: 0
+    readonly property real _displayValue: mouseArea.pressed ? _dragValue : value
+    readonly property real _ratio: maxValue > minValue
+        ? Math.max(0, Math.min(1, (_displayValue - minValue) / (maxValue - minValue))) : 0
 
     implicitWidth: 200
     implicitHeight: 24
@@ -24,38 +28,35 @@ Item {
         color: Colors.bgElevated
 
         Rectangle {
-            id: fill
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: parent.width * ((root.value - root.minValue) / (root.maxValue - root.minValue))
-            radius: parent.radius
+            width: track.width * root._ratio
+            radius: track.radius
             color: Colors.accent
 
             Behavior on width {
-                enabled: mouseArea.pressed === false
+                enabled: !mouseArea.pressed
                 NumberAnimation { duration: Motion.durationFast }
             }
         }
     }
 
     Rectangle {
-        id: handle
         width: 16
         height: 16
         radius: width / 2
         color: Colors.textPrimary
-        x: track.x + (track.width - width) * ((root.value - root.minValue) / (root.maxValue - root.minValue))
+        x: track.x + (track.width - width) * root._ratio
         anchors.verticalCenter: parent.verticalCenter
-
-        scale: mouseArea.pressed ? 1.2 : (mouseArea.containsMouse ? 1.1 : 1.0)
+        scale: mouseArea.pressed ? 1.2 : (mouseArea.containsMouse ? 1.1 : 1)
 
         Behavior on scale {
             NumberAnimation { duration: Motion.pressDuration }
         }
 
         Behavior on x {
-            enabled: mouseArea.pressed === false
+            enabled: !mouseArea.pressed
             NumberAnimation { duration: Motion.durationFast }
         }
     }
@@ -66,25 +67,28 @@ Item {
         hoverEnabled: root.enabled
         cursorShape: root.enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
 
-        onPressed: function(mouse) {
-            if (root.enabled) {
-                updateValue(mouse.x)
-            }
+        onPressed: mouse => root._updateDrag(mouse.x)
+        onPositionChanged: mouse => {
+            if (pressed) root._updateDrag(mouse.x)
         }
+        onWheel: wheel => {
+            const delta = wheel.angleDelta.y !== 0 ? wheel.angleDelta.y : wheel.angleDelta.x
+            if (delta === 0) return
+            const step = (root.maxValue - root.minValue) * 0.05
+            const next = root._clamp(root._displayValue + (delta > 0 ? step : -step))
+            if (pressed) root._dragValue = next
+            root.moved(next)
+            wheel.accepted = true
+        }
+    }
 
-        onPositionChanged: function(mouse) {
-            if (root.enabled && pressed) {
-                updateValue(mouse.x)
-            }
-        }
+    function _clamp(next: real): real {
+        return Math.max(root.minValue, Math.min(root.maxValue, next))
+    }
 
-        function updateValue(mouseX) {
-            const ratio = Math.max(0, Math.min(1, mouseX / root.width))
-            const newValue = root.minValue + ratio * (root.maxValue - root.minValue)
-            if (newValue !== root.value) {
-                root.value = newValue
-                root.userValueChanged(newValue)
-            }
-        }
+    function _updateDrag(mouseX: real): void {
+        const ratio = root.width > 0 ? Math.max(0, Math.min(1, mouseX / root.width)) : 0
+        root._dragValue = root.minValue + ratio * (root.maxValue - root.minValue)
+        root.moved(root._dragValue)
     }
 }

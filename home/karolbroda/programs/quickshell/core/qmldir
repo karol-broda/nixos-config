@@ -1,7 +1,8 @@
 module qs.core
 
-singleton Actions Actions.qml
-singleton Dispatcher Dispatcher.qml
-EdgeDrawer EdgeDrawer.qml
-Panel Panel.qml
-PanelOutline PanelOutline.qml
+Fsm Fsm.qml
+Job Job.qml
+Lease Lease.qml
+Outline Outline.qml
+Surface Surface.qml
+SurfaceLayer SurfaceLayer.qml

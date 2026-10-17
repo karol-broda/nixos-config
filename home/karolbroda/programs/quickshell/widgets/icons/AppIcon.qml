@@ -1,5 +1,4 @@
 import QtQuick
-import Quickshell
 import qs.theme
 import qs.services
 
@@ -11,18 +10,15 @@ Item {
     property string source: ""
     property int size: Spacing.iconLg
 
-    // bumped to force re-evaluation of icon bindings after desktop
-    // entries or icon theme finish loading asynchronously
     property int _resolveRevision: 0
-    // briefly set true to clear the image source, invalidating
-    // any cached load failures before a fresh attempt
     property bool _clearing: false
 
     function _retryResolve(): void {
-        var freshSource = ""
-        if (root.appId !== null && root.appId !== undefined && root.appId !== "") {
+        if (root.source !== "") return
+        let freshSource = ""
+        if (root.appId !== "") {
             freshSource = AppIcons.forApp(root.appId)
-        } else if (root.iconName !== null && root.iconName !== undefined && root.iconName !== "") {
+        } else if (root.iconName !== "") {
             freshSource = AppIcons.forName(root.iconName)
         }
 
@@ -35,40 +31,38 @@ Item {
     }
 
     readonly property string _iconSearchName: {
-        var _rev = root._resolveRevision
-        if (root.appId !== null && root.appId !== undefined && root.appId !== "") {
+        const _rev = root._resolveRevision
+        if (root.appId !== "") {
             return AppIcons.getIconName(root.appId)
         }
-        if (root.iconName !== null && root.iconName !== undefined && root.iconName !== "") {
+        if (root.iconName !== "") {
             return root.iconName
         }
         return ""
     }
 
     readonly property string _primarySource: {
-        var _rev = root._resolveRevision
-        if (root.source !== null && root.source !== undefined && root.source !== "") {
+        const _rev = root._resolveRevision
+        if (root.source !== "") {
             return root.source
         }
-        if (root.appId !== null && root.appId !== undefined && root.appId !== "") {
+        if (root.appId !== "") {
             return AppIcons.forApp(root.appId)
         }
-        if (root.iconName !== null && root.iconName !== undefined && root.iconName !== "") {
+        if (root.iconName !== "") {
             return AppIcons.forName(root.iconName)
         }
         return ""
     }
 
-    readonly property var _allSources: {
-        var list = []
+    readonly property list<string> _allSources: {
+        const list = []
         if (_primarySource !== "") {
             list.push(_primarySource)
         }
-        // only add pixmap fallbacks when the source comes from theme lookup
-        // (not for direct source pass-through, which is already a concrete path)
-        if (root.source === "" || root.source === null || root.source === undefined) {
-            var fallbacks = AppIcons.fallbackSources(root._iconSearchName)
-            for (var i = 0; i < fallbacks.length; i++) {
+        if (root.source === "") {
+            const fallbacks = AppIcons.fallbackSources(root._iconSearchName)
+            for (let i = 0; i < fallbacks.length; i++) {
                 list.push(fallbacks[i])
             }
         }
@@ -82,19 +76,19 @@ Item {
     onSourceChanged: _sourceIndex = 0
 
     readonly property string displayName: {
-        if (root.appId !== null && root.appId !== undefined && root.appId !== "") {
+        if (root.appId !== "") {
             return root.appId
         }
-        if (root.iconName !== null && root.iconName !== undefined && root.iconName !== "") {
+        if (root.iconName !== "") {
             return root.iconName
         }
         return ""
     }
 
     readonly property int _requestSize: {
-        var target = root.size * 2
-        var sizes = [16, 22, 24, 32, 48, 64, 96, 128, 256]
-        for (var i = 0; i < sizes.length; i++) {
+        const target = root.size * 2
+        const sizes = [16, 22, 24, 32, 48, 64, 96, 128, 256]
+        for (let i = 0; i < sizes.length; i++) {
             if (sizes[i] >= target) {
                 return sizes[i]
             }
@@ -120,7 +114,7 @@ Item {
         source: {
             if (root._clearing) return ""
             if (root._allSources.length > root._sourceIndex) {
-                return root._allSources[root._sourceIndex]
+                return String(root._allSources[root._sourceIndex])
             }
             return ""
         }
@@ -136,7 +130,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        radius: Spacing.radiusSm
+        radius: Spacing.radiusNested
         color: Colors.surface0
         visible: iconImage.status !== Image.Ready
 
@@ -155,9 +149,6 @@ Item {
         }
     }
 
-    // icon theme and desktop entries load asynchronously, so lookups
-    // may resolve to a generic fallback on first load. retry once after
-    // a delay so resources have time to become available.
     Timer {
         interval: 2000
         running: (root.appId !== "" || root.iconName !== "") && root._resolveRevision < 1
@@ -165,7 +156,6 @@ Item {
         onTriggered: root._retryResolve()
     }
 
-    // restores the image source after a brief clear to flush cached failures
     Timer {
         id: _restoreTimer
         interval: 10

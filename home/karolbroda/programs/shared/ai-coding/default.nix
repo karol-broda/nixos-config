@@ -1,8 +1,8 @@
-{
-  pkgs,
-  inputs,
-  ...
-}: let
+{ pkgs
+, inputs
+, ...
+}:
+let
   llm-agents = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system};
   wtsFunc = ''
     wts() {
@@ -16,25 +16,24 @@
       fi
     }
   '';
-in {
+in
+{
   imports = [
     ../ai-zed.nix
   ];
 
   home = {
-    sessionPath = ["$HOME/.local/bin"];
+    sessionPath = [ "$HOME/.local/bin" ];
 
     packages = [
-      # pkgs.tmux
-      # llm-agents.ccstatusline
       llm-agents.codex
-      # inputs.workmux.packages.${pkgs.stdenv.hostPlatform.system}.default  # shell completion build failure upstream
+      llm-agents.zcode
+      llm-agents.claude-code
       pkgs.mcp-server-fetch
       pkgs.mcp-server-filesystem
-      # pkgs.fabric-ai
     ];
 
-    file = {};
+    file = { };
   };
 
   programs = {

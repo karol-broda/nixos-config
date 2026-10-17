@@ -1,35 +1,49 @@
 import QtQuick
+import QtQuick.Layouts
 import qs.theme
-import qs.core
 import qs.services
-import "sections"
 
-Panel {
+Item {
     id: root
 
-    slideFrom: "top-left"
-    open: panelOpen && Tray.activeMenuHandle !== null
+    signal subMenuRequested(var entry, real globalY)
+    signal plainEntryHovered()
 
-    property bool panelOpen: false
+    implicitWidth: 220
+    implicitHeight: column.implicitHeight + Spacing.menuPadding * 2
 
-    targetWidth: 220
-    targetHeight: trayMenu.implicitHeight + Spacing.panelPadding * 2
-
-    onPanelOpenChanged: {
-        if (panelOpen !== true) {
-            Tray.closeMenu()
-        }
-    }
-
-    TrayMenu {
-        id: trayMenu
+    ColumnLayout {
+        id: column
         anchors.fill: parent
-        anchors.margins: Spacing.panelPadding
+        anchors.margins: Spacing.menuPadding
+        spacing: 0
 
-        menuHandle: Tray.activeMenuHandle
-        trayItemData: Tray.activeMenuItem
-        flyoutRightEdge: root.x + root.width
+        Text {
+            id: tooltipLabel
+            Layout.fillWidth: true
+            Layout.bottomMargin: Spacing.spacingXs
+            text: Tray.tooltip(Tray.activeMenuItem)
+            font.family: Typography.labelFamily
+            font.pixelSize: Typography.sizeMicro
+            font.letterSpacing: Typography.microLabelSpacing
+            color: Colors.textDim
+            elide: Text.ElideRight
+            visible: text !== ""
+        }
 
-        onClosed: Tray.closeMenu()
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.bottomMargin: Spacing.spacingXs
+            implicitHeight: 1
+            color: Colors.divider
+            visible: tooltipLabel.visible
+        }
+
+        MenuList {
+            Layout.fillWidth: true
+            menu: Tray.activeMenu
+            onSubMenuRequested: (entry, globalY) => root.subMenuRequested(entry, globalY)
+            onPlainEntryHovered: root.plainEntryHovered()
+        }
     }
 }

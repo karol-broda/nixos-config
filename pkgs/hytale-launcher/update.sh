@@ -16,7 +16,6 @@ fi
 function selectUrlAndHash() {
   local os="$1"
   local arch="$2"
-  # shellcheck disable=SC2016
   launcherJq --arg os "$os" --arg arch "$arch" '[.download_url[$os][$arch].url, .download_url[$os][$arch].sha256] | join(" ")'
 }
 
@@ -27,7 +26,6 @@ function prefetch() {
 function fetchzipFile() {
   local file="$1"
   shift
-  # keep a reference to the store path to keep it in the sandbox
   derivationArgs="{ src = builtins.storePath $(echo -n "$file" | jq -Rsa '.'); }"
   nix-prefetch -I nixpkgs=./. --quiet fetchzip --url "file://$file" --derivationArgs --expr "$derivationArgs" "$@"
 }

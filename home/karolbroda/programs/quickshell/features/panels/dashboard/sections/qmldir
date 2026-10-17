@@ -1,10 +1,10 @@
 module qs.features.panels.dashboard.sections
 
-VolumeSlider 1.0 VolumeSlider.qml
-BrightnessSlider 1.0 BrightnessSlider.qml
-QuickToggles 1.0 QuickToggles.qml
-NetworkDetail 1.0 NetworkDetail.qml
 BluetoothDetail 1.0 BluetoothDetail.qml
+BrightnessControl 1.0 BrightnessControl.qml
 MediaCard 1.0 MediaCard.qml
-WeatherCard 1.0 WeatherCard.qml
+NetworkDetail 1.0 NetworkDetail.qml
+QuickToggles 1.0 QuickToggles.qml
 SystemInfo 1.0 SystemInfo.qml
+VolumeControl 1.0 VolumeControl.qml
+WeatherCard 1.0 WeatherCard.qml

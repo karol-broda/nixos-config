@@ -1,0 +1,9 @@
+{
+  "workspace.ignoreDir": [
+    ".git",
+    ".direnv",
+    "_tmp",
+    "result*"
+  ],
+  "workspace.useGitIgnore": true
+}

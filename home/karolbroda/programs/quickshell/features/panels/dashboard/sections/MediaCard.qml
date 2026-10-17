@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import qs.theme
-import qs.core
 import qs.services
 import qs.widgets.containers
 import qs.widgets.icons
@@ -12,12 +11,10 @@ import qs.widgets.buttons
 Card {
     id: root
 
-    visible: Players.hasPlayer === true
-    implicitHeight: visible ? mediaContent.implicitHeight + Spacing.paddingMd * 2 : 0
+    property bool active: false
 
-    Behavior on implicitHeight {
-        NumberAnimation { duration: Motion.durationMedium }
-    }
+    visible: Players.hasPlayer
+    implicitHeight: mediaContent.implicitHeight + Spacing.paddingMd * 2
 
     CavaVisualizer {
         anchors.left: parent.left
@@ -25,6 +22,7 @@ Card {
         anchors.verticalCenter: parent.verticalCenter
         height: parent.height * 0.8
         opacity: 0.3
+        active: root.active && Players.isPlaying
     }
 
     RowLayout {
@@ -35,31 +33,24 @@ Card {
         Rectangle {
             Layout.preferredWidth: 56
             Layout.preferredHeight: 56
-            radius: Spacing.radiusSm
+            radius: Spacing.radiusNested
             color: Colors.bgSecondary
             clip: true
 
             Image {
+                id: art
                 anchors.fill: parent
-                source: {
-                    if (Players.hasPlayer !== true) return ""
-                    const url = Players.active.trackArtUrl
-                    return url !== null && url !== undefined ? url : ""
-                }
+                source: Players.artUrl
                 fillMode: Image.PreserveAspectCrop
-                visible: source !== ""
+                asynchronous: true
+                visible: status === Image.Ready
             }
 
             DuotoneIcon {
                 anchors.centerIn: parent
                 name: "music-note"
                 size: Spacing.iconMd
-                iconState: "default"
-                visible: {
-                    if (Players.hasPlayer !== true) return true
-                    const url = Players.active.trackArtUrl
-                    return url === null || url === undefined || url === ""
-                }
+                visible: !art.visible
             }
         }
 
@@ -69,22 +60,12 @@ Card {
 
             Body {
                 Layout.fillWidth: true
-                text: {
-                    if (Players.hasPlayer !== true) return "Not Playing"
-                    const title = Players.active.trackTitle
-                    return title !== null && title !== undefined && title !== "" ? title : "Not Playing"
-                }
-                elide: Text.ElideRight
+                text: Players.title || "Not Playing"
             }
 
             Label {
                 Layout.fillWidth: true
-                text: {
-                    if (Players.hasPlayer !== true) return ""
-                    const artist = Players.active.trackArtist
-                    return artist !== null && artist !== undefined ? artist : ""
-                }
-                elide: Text.ElideRight
+                text: Players.artist
                 visible: text !== ""
             }
         }
@@ -96,24 +77,21 @@ Card {
                 icon: "skip-back"
                 size: 32
                 iconSize: Spacing.iconSm
-                onClicked: Dispatcher.dispatch(Actions.prevTrack())
+                onClicked: Players.previous()
             }
 
             IconButton {
-                icon: {
-                    if (Players.hasPlayer !== true) return "play"
-                    return Players.isPlaying === true ? "pause" : "play"
-                }
+                icon: Players.isPlaying ? "pause" : "play"
                 size: 36
                 iconSize: Spacing.iconMd
-                onClicked: Dispatcher.dispatch(Actions.playPause())
+                onClicked: Players.togglePlaying()
             }
 
             IconButton {
                 icon: "skip-forward"
                 size: 32
                 iconSize: Spacing.iconSm
-                onClicked: Dispatcher.dispatch(Actions.nextTrack())
+                onClicked: Players.next()
             }
         }
     }

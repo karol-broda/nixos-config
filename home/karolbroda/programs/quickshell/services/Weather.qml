@@ -2,27 +2,21 @@ pragma Singleton
 
 import Quickshell
 import QtQuick
-import qs.services
+import qs.core
 
 Singleton {
     id: root
 
-    property bool loaded: false
-    property string location: ""
-    property string temperature: ""
-    property string condition: ""
-    property string icon: "sun"
+    readonly property bool loaded: _weather.loaded
+    readonly property string location: _place.city
+    readonly property string temperature: _weather.temperature
+    readonly property string condition: _weather.condition
+    readonly property string icon: _weather.icon
+    readonly property var forecast: _weather.forecast
 
-    property var cc: null
-    property var forecast: null
-
-    property string cachedLoc: ""
-    property bool locationFetched: false
-
-    property bool fetching: false
-    property int retryCount: 0
-    readonly property int maxRetries: 3
-    readonly property int baseRetryDelayMs: 30000
+    property var _weather: ({ loaded: false, temperature: "", condition: "", icon: "sun", forecast: null })
+    property var _place: ({ city: "", coordinates: "" })
+    property int _failures: 0
 
     readonly property var weatherIcons: ({
         "113": "sun",
@@ -75,117 +69,94 @@ Singleton {
         "395": "cloud-snow"
     })
 
-    function getWeatherIcon(code) {
-        if (code === null || code === undefined) return "sun"
-        const codeStr = code.toString()
-        if (root.weatherIcons[codeStr] !== undefined) {
-            return root.weatherIcons[codeStr]
-        }
-        return "sun"
-    }
-
-    function scheduleRetry(): void {
-        if (root.retryCount >= root.maxRetries) {
-            console.warn("[WEATHER] giving up after " + root.maxRetries + " retries")
-            root.fetching = false
-            root.retryCount = 0
-            return
-        }
-
-        const delay = root.baseRetryDelayMs * Math.pow(2, root.retryCount)
-        root.retryCount += 1
-        console.log("[WEATHER] retry " + root.retryCount + "/" + root.maxRetries + " in " + (delay / 1000) + "s")
-        retryTimer.interval = delay
-        retryTimer.restart()
-    }
-
     function reload(): void {
-        if (root.fetching) return
-
-        root.fetching = true
-        root.retryCount = 0
-
-        if (root.locationFetched && root.cachedLoc !== "") {
-            fetchWeather(root.cachedLoc)
-            return
-        }
-
-        Requests.get("https://ipinfo.io/json", function(text) {
-            try {
-                const parsed = JSON.parse(text)
-                if (parsed !== null && parsed !== undefined && parsed.city !== null && parsed.city !== undefined) {
-                    root.location = parsed.city
-                    const loc = parsed.loc !== null && parsed.loc !== undefined ? parsed.loc : ""
-                    root.cachedLoc = loc
-                    root.locationFetched = true
-                    fetchWeather(loc)
-                }
-            } catch (e) {
-                console.warn("[WEATHER] failed to get location")
-                root.fetching = false
-            }
-        }, function(_reason) {
-            root.scheduleRetry()
-        })
+        if (!flow.is("idle")) return
+        root._start()
     }
 
-    function fetchWeather(loc: string): void {
-        if (loc === null || loc === undefined || loc === "") {
-            root.fetching = false
-            return
+    function _start(): void {
+        flow.go(root._place.coordinates ? "fetching" : "locating")
+    }
+
+    function _fail(): void {
+        root._failures = Math.min(3, root._failures + 1)
+        flow.go("backoff")
+    }
+
+    Fsm {
+        id: flow
+        initial: "idle"
+        transitions: ({
+            idle: ["locating", "fetching"],
+            locating: ["fetching", "backoff"],
+            fetching: ["idle", "backoff"],
+            backoff: ["idle", "locating", "fetching"]
+        })
+        onEntered: state => {
+            if (state === "locating") {
+                job.run(["curl", "-sf", "--max-time", "15", "https://ipinfo.io/json"], state)
+            } else if (state === "fetching") {
+                const url = "https://wttr.in/" + encodeURIComponent(root._place.coordinates) + "?format=j1"
+                job.run(["curl", "-sf", "--max-time", "15", url], state)
+            } else if (state === "backoff") {
+                backoff.interval = 30000 * Math.pow(2, root._failures - 1)
+                backoff.restart()
+            }
         }
+    }
 
-        Requests.get("https://wttr.in/" + loc + "?format=j1", function(text) {
-            root.fetching = false
-            root.retryCount = 0
-
+    Job {
+        id: job
+        environment: Env.withProfilePath
+        timeout: 16000
+        onFinished: (tag, output, exitCode) => {
+            if (tag !== flow.state) return
+            if (exitCode !== 0) {
+                root._fail()
+                return
+            }
             try {
-                const json = JSON.parse(text)
-                if (json === null || json === undefined) return
-
-                const current = json.current_condition
-                if (current !== null && current !== undefined && current.length > 0) {
-                    root.cc = current[0]
-
-                    const tempC = root.cc.temp_C
-                    root.temperature = tempC !== null && tempC !== undefined ? tempC : "0"
-
-                    const weatherDesc = root.cc.weatherDesc
-                    if (weatherDesc !== null && weatherDesc !== undefined && weatherDesc.length > 0) {
-                        const firstDesc = weatherDesc[0]
-                        root.condition = firstDesc !== null && firstDesc !== undefined && firstDesc.value !== null ? firstDesc.value : ""
+                const data = JSON.parse(output)
+                if (tag === "locating") {
+                    if (typeof data?.loc !== "string" || !/^-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?$/.test(data.loc)) {
+                        root._fail()
+                        return
                     }
-
-                    const weatherCode = root.cc.weatherCode
-                    root.icon = root.getWeatherIcon(weatherCode)
-                    root.loaded = true
+                    root._place = { city: String(data.city ?? ""), coordinates: data.loc }
+                    flow.go("fetching")
+                } else {
+                    const current = data?.current_condition?.[0]
+                    if (current?.temp_C == null) {
+                        root._fail()
+                        return
+                    }
+                    root._weather = {
+                        loaded: true,
+                        temperature: String(current.temp_C),
+                        condition: String(current.weatherDesc?.[0]?.value ?? ""),
+                        icon: root.weatherIcons[String(current.weatherCode ?? "")] ?? "sun",
+                        forecast: data.weather ?? null
+                    }
+                    root._failures = 0
+                    flow.go("idle")
                 }
-
-                root.forecast = json.weather
             } catch (e) {
-                console.warn("[WEATHER] failed to parse weather data")
+                root._fail()
             }
-        }, function(_reason) {
-            root.scheduleRetry()
-        })
+        }
     }
 
-    // delay initial fetch so the network stack has time to come up
     Timer {
-        id: startupTimer
         interval: 5000
         running: true
-        repeat: false
         onTriggered: root.reload()
     }
 
     Timer {
-        id: retryTimer
-        running: false
-        repeat: false
+        id: backoff
         onTriggered: {
-            root.fetching = false
-            root.reload()
+            if (root._failures >= 3) flow.go("idle")
+            else root._start()
         }
     }
 

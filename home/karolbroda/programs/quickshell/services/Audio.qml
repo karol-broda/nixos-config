@@ -6,90 +6,51 @@ import Quickshell.Services.Pipewire
 Singleton {
     id: root
 
-    readonly property var nodes: Pipewire.nodes.values.reduce((acc, node) => {
-        if (node !== null && node !== undefined && node.isStream !== true) {
-            if (node.isSink === true) {
-                acc.sinks.push(node)
-            } else if (node.audio === true) {
-                acc.sources.push(node)
-            }
-        }
-        return acc
-    }, { sources: [], sinks: [] })
-
-    readonly property list<PwNode> sinks: nodes.sinks
-    readonly property list<PwNode> sources: nodes.sources
-
-    readonly property PwNode sink: Pipewire.defaultAudioSink
-    readonly property PwNode source: Pipewire.defaultAudioSource
-
-    readonly property bool muted: {
-        if (sink === null || sink === undefined) return false
-        if (sink.audio === null || sink.audio === undefined) return false
-        return sink.audio.muted === true
-    }
-
-    readonly property real volume: {
-        if (sink === null || sink === undefined) return 0
-        if (sink.audio === null || sink.audio === undefined) return 0
-        return sink.audio.volume || 0
-    }
+    readonly property list<PwNode> sinks: Pipewire.nodes.values.filter(n => !n.isStream && n.isSink && n.audio !== null)
+    readonly property list<PwNode> sources: Pipewire.nodes.values.filter(n => !n.isStream && !n.isSink && n.audio !== null)
+    readonly property PwNode sink: Pipewire.defaultAudioSink ?? null
+    readonly property bool muted: sink?.audio?.muted ?? false
+    readonly property real volume: Math.max(0, Math.min(1, sink?.audio?.volume ?? 0))
+    readonly property string sinkName: sink?.description || sink?.name || "No output"
+    readonly property real peak: sinkPeakMonitor.peak
 
     readonly property string icon: {
         if (muted) return "speaker-slash"
         if (volume <= 0) return "speaker-none"
-        if (volume < 0.33) return "speaker-low"
-        if (volume < 0.66) return "speaker-high"
-        return "speaker-high"
+        return volume < 0.5 ? "speaker-low" : "speaker-high"
     }
 
-    function setVolume(newVolume: real): void {
-        if (sink === null || sink === undefined) return
-        if (sink.audio === null || sink.audio === undefined) return
-        sink.audio.volume = Math.max(0, Math.min(1, newVolume))
+    function setVolume(value: real): void {
+        if (root.sink?.audio && isFinite(value)) root.sink.audio.volume = Math.max(0, Math.min(1, value))
     }
 
-    function incrementVolume(amount: real): void {
-        var delta = amount
-        if (delta === null || delta === undefined || delta === 0) {
-            delta = 0.05
-        }
-        setVolume(volume + delta)
+    function incrementVolume(amount = 0.05): void {
+        root.setVolume(root.volume + amount)
     }
 
-    function decrementVolume(amount: real): void {
-        var delta = amount
-        if (delta === null || delta === undefined || delta === 0) {
-            delta = 0.05
-        }
-        setVolume(volume - delta)
+    function decrementVolume(amount = 0.05): void {
+        root.setVolume(root.volume - amount)
     }
 
     function toggleMute(): void {
-        if (sink === null || sink === undefined) return
-        if (sink.audio === null || sink.audio === undefined) return
-        sink.audio.muted = sink.audio.muted !== true
+        if (root.sink?.audio) root.sink.audio.muted = !root.sink.audio.muted
     }
 
-    function setAudioSink(newSink: PwNode): void {
-        Pipewire.preferredDefaultAudioSink = newSink
+    function setAudioSink(node: PwNode): void {
+        Pipewire.preferredDefaultAudioSink = node
     }
 
-    function setAudioSource(newSource: PwNode): void {
-        Pipewire.preferredDefaultAudioSource = newSource
+    function setAudioSource(node: PwNode): void {
+        Pipewire.preferredDefaultAudioSource = node
     }
-
-    // peak level monitoring for the default sink (0.0–1.0)
-    readonly property real peak: sinkPeakMonitor.peak
-    readonly property list<real> peaks: sinkPeakMonitor.peaks
 
     PwNodePeakMonitor {
         id: sinkPeakMonitor
         node: root.sink
-        enabled: root.sink !== null && root.sink !== undefined
+        enabled: root.sink !== null
     }
 
     PwObjectTracker {
-        objects: [...root.sinks, ...root.sources]
+        objects: [...root.sinks, ...root.sources, root.sink].filter(n => n !== null)
     }
 }

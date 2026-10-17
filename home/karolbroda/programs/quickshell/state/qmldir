@@ -1,0 +1,3 @@
+module qs.state
+
+singleton Shell Shell.qml

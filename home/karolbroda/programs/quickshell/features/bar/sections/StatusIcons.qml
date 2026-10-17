@@ -9,40 +9,33 @@ RowLayout {
 
     spacing: Spacing.spacingXs
 
-    Item {
+    component StatusIcon: Item {
+        property alias name: icon.name
+        property alias iconState: icon.iconState
+
         Layout.preferredWidth: Spacing.iconMd
         Layout.preferredHeight: Spacing.iconMd
 
         DuotoneIcon {
+            id: icon
             anchors.centerIn: parent
-            name: Network.icon !== null && Network.icon !== undefined ? Network.icon : "wifi-slash"
             size: Spacing.iconSm
-            iconState: !Network.ready || Network.connected === true ? "default" : "disabled"
         }
     }
 
-    Item {
-        Layout.preferredWidth: Spacing.iconMd
-        Layout.preferredHeight: Spacing.iconMd
-
-        DuotoneIcon {
-            anchors.centerIn: parent
-            name: Audio.icon !== null && Audio.icon !== undefined ? Audio.icon : "speaker-high"
-            size: Spacing.iconSm
-            iconState: Audio.muted === true ? "disabled" : "default"
-        }
+    StatusIcon {
+        name: Network.icon
+        iconState: !Network.ready || Network.connected ? "default" : "disabled"
     }
 
-    Item {
-        Layout.preferredWidth: Spacing.iconMd
-        Layout.preferredHeight: Spacing.iconMd
-        visible: Battery.available === true
+    StatusIcon {
+        name: Audio.icon
+        iconState: Audio.muted ? "disabled" : "default"
+    }
 
-        DuotoneIcon {
-            anchors.centerIn: parent
-            name: Battery.icon !== null && Battery.icon !== undefined ? Battery.icon : "battery-full"
-            size: Spacing.iconSm
-            iconState: Battery.isLow === true ? "active" : "default"
-        }
+    StatusIcon {
+        visible: Battery.available
+        name: Battery.icon
+        iconState: Battery.isLow ? "active" : "default"
     }
 }

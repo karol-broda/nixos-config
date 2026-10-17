@@ -38,7 +38,7 @@ in {
       settings = {
         user = {
           name = "Karol Broda";
-          email = "karol.broda@titanom.com";
+          email = "me@karolbroda.com";
           signingkey = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEiUadbiB7ux9bAT1XzxhjvOR7FiepZt1rf9G4EWxIxa";
         };
 

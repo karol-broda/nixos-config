@@ -54,6 +54,8 @@ in {
 
     taskwarrior3
     attic-client
+
+    signal-desktop
   ];
 
   home.file = {

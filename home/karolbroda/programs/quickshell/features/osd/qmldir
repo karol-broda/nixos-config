@@ -1,3 +1,4 @@
 module qs.features.osd
 
-OsdPopup OsdPopup.qml
+singleton OsdState OsdState.qml
+OsdContent OsdContent.qml

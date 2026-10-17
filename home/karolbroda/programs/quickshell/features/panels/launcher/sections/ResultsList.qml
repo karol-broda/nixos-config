@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import qs.theme
 
@@ -12,8 +14,11 @@ Item {
 
     implicitHeight: listView.contentHeight
 
+    onSelectedIndexChanged: listView.positionViewAtIndex(selectedIndex, ListView.Contain)
+
     ListView {
         id: listView
+
         anchors.fill: parent
         model: root.results
         spacing: Spacing.spacingXs
@@ -30,16 +35,6 @@ Item {
 
             onClicked: root.itemClicked(index)
             onHovered: root.itemHovered(index)
-        }
-
-        onCurrentIndexChanged: {
-            listView.positionViewAtIndex(root.selectedIndex, ListView.Contain)
-        }
-
-        Binding {
-            target: listView
-            property: "currentIndex"
-            value: root.selectedIndex
         }
     }
 }

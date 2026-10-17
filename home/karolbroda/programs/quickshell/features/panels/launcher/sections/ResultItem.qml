@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
 import qs.theme
 import qs.widgets.icons
 import qs.widgets.text
@@ -9,24 +8,22 @@ import qs.widgets.containers
 Item {
     id: root
 
-    property var result: null
+    required property var result
     property bool isSelected: false
 
     signal clicked()
     signal hovered()
 
+    readonly property bool hasFilePreview: result.previewType === "file" && result.preview !== ""
+
     implicitHeight: 48
 
     Rectangle {
         anchors.fill: parent
-        radius: Spacing.radiusSm
+        radius: Spacing.radiusInner
         color: {
-            if (root.isSelected) {
-                return Colors.withAlpha(Colors.accent, 0.15)
-            }
-            if (mouseArea.containsMouse) {
-                return Colors.bgHover
-            }
+            if (root.isSelected) return Colors.withAlpha(Colors.accent, 0.15)
+            if (mouseArea.containsMouse) return Colors.bgHover
             return "transparent"
         }
         border.width: root.isSelected ? 1 : 0
@@ -44,35 +41,25 @@ Item {
         spacing: Spacing.spacingMd
 
         Item {
-            id: iconSlot
-            Layout.preferredWidth: iconSlot.hasFilePreview ? 52 : 32
+            Layout.preferredWidth: root.hasFilePreview ? 52 : 32
             Layout.preferredHeight: 32
-
-            readonly property bool hasFilePreview: {
-                if (root.result === null || root.result === undefined) return false
-                const preview = root.result.preview
-                const previewType = root.result.previewType
-                return preview !== null && preview !== undefined && preview !== ""
-                    && previewType === "file"
-            }
 
             Rectangle {
                 anchors.centerIn: parent
                 width: 52
                 height: 32
-                radius: Spacing.radiusMd
+                radius: Spacing.radiusNested
                 color: Colors.surface0
                 clip: true
-                visible: iconSlot.hasFilePreview
+                visible: root.hasFilePreview
 
                 Image {
-                    id: thumbnailImage
+                    id: thumbnail
                     anchors.fill: parent
-                    source: iconSlot.hasFilePreview ? "file://" + root.result.preview : ""
+                    source: root.hasFilePreview ? "file://" + root.result.preview : ""
                     sourceSize.width: 128
                     sourceSize.height: 80
                     fillMode: Image.PreserveAspectCrop
-                    smooth: true
                     asynchronous: true
                     visible: status === Image.Ready
                 }
@@ -82,34 +69,23 @@ Item {
                     name: "image"
                     size: Spacing.iconMd
                     iconState: root.isSelected ? "active" : "default"
-                    visible: thumbnailImage.status !== Image.Ready
+                    visible: !thumbnail.visible
                 }
             }
 
             AppIcon {
                 anchors.centerIn: parent
-                iconName: {
-                    if (root.result === null || root.result === undefined) return ""
-                    return root.result.icon || ""
-                }
+                iconName: root.result.icon
                 size: 28
-                visible: !iconSlot.hasFilePreview && iconName !== ""
+                visible: !root.hasFilePreview && root.result.icon !== ""
             }
 
             DuotoneIcon {
                 anchors.centerIn: parent
-                name: {
-                    if (root.result === null || root.result === undefined) return "app-window"
-                    return root.result.providerIcon || "app-window"
-                }
+                name: root.result.providerIcon
                 size: Spacing.iconMd
                 iconState: root.isSelected ? "active" : "default"
-                visible: {
-                    if (iconSlot.hasFilePreview) return false
-                    if (root.result === null || root.result === undefined) return true
-                    const icon = root.result.icon
-                    return icon === null || icon === undefined || icon === ""
-                }
+                visible: !root.hasFilePreview && root.result.icon === ""
             }
         }
 
@@ -119,41 +95,26 @@ Item {
 
             Body {
                 Layout.fillWidth: true
-                text: {
-                    if (root.result === null || root.result === undefined) return ""
-                    return root.result.label || ""
-                }
+                text: root.result.label
                 color: root.isSelected ? Colors.accent : Colors.textPrimary
-                elide: Text.ElideRight
             }
 
             Label {
                 Layout.fillWidth: true
-                text: {
-                    if (root.result === null || root.result === undefined) return ""
-                    return root.result.sublabel || ""
-                }
+                text: root.result.sublabel
                 visible: text !== ""
-                elide: Text.ElideRight
             }
         }
 
         Pill {
             Layout.preferredHeight: 20
             implicitWidth: providerLabel.implicitWidth + Spacing.paddingSm * 2
-            visible: {
-                if (root.result === null || root.result === undefined) return false
-                const label = root.result.providerLabel
-                return label !== null && label !== undefined && label !== "" && label !== "Apps"
-            }
+            visible: root.result.providerLabel !== "" && root.result.providerLabel !== "Apps"
 
             Label {
                 id: providerLabel
                 anchors.centerIn: parent
-                text: {
-                    if (root.result === null || root.result === undefined) return ""
-                    return root.result.providerLabel || ""
-                }
+                text: root.result.providerLabel
                 font.pixelSize: Typography.sizeMicro
             }
         }
@@ -166,10 +127,6 @@ Item {
         cursorShape: Qt.PointingHandCursor
 
         onClicked: root.clicked()
-        onContainsMouseChanged: {
-            if (containsMouse) {
-                root.hovered()
-            }
-        }
+        onContainsMouseChanged: if (containsMouse) root.hovered()
     }
 }

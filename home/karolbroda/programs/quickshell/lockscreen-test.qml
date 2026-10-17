@@ -19,7 +19,7 @@ ShellRoot {
     Connections {
         target: Quickshell
 
-        function onLastWindowClosed() {
+        function onLastWindowClosed(): void {
             Qt.quit()
         }
     }

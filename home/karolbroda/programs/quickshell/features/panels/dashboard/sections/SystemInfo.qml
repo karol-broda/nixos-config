@@ -1,5 +1,8 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
+import qs.core
 import qs.theme
 import qs.services
 import qs.widgets.indicators
@@ -8,75 +11,50 @@ import qs.widgets.text
 ColumnLayout {
     id: root
 
+    property bool active: false
+
     spacing: Spacing.spacingSm
 
-    Component.onCompleted: SystemUsage.refCount++
-    Component.onDestruction: SystemUsage.refCount--
+    Lease {
+        target: SystemUsage
+        active: root.active
+    }
 
     Label {
         text: "System"
     }
 
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: Spacing.spacingSm
+    Repeater {
+        model: [
+            { label: "CPU", value: () => SystemUsage.cpuPerc },
+            { label: "RAM", value: () => SystemUsage.memPerc },
+            { label: "Disk", value: () => SystemUsage.storagePerc }
+        ]
 
-        Label {
-            text: "CPU"
-            Layout.preferredWidth: 40
-        }
+        RowLayout {
+            id: row
 
-        Progress {
+            required property var modelData
+            readonly property real value: modelData.value()
+
             Layout.fillWidth: true
-            value: SystemUsage.cpuPerc
-        }
+            spacing: Spacing.spacingSm
 
-        Label {
-            text: Math.round(SystemUsage.cpuPerc * 100) + "%"
-            Layout.preferredWidth: 36
-            horizontalAlignment: Text.AlignRight
-        }
-    }
+            Label {
+                text: row.modelData.label
+                Layout.preferredWidth: 40
+            }
 
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: Spacing.spacingSm
+            Progress {
+                Layout.fillWidth: true
+                value: row.value
+            }
 
-        Label {
-            text: "RAM"
-            Layout.preferredWidth: 40
-        }
-
-        Progress {
-            Layout.fillWidth: true
-            value: SystemUsage.memPerc
-        }
-
-        Label {
-            text: Math.round(SystemUsage.memPerc * 100) + "%"
-            Layout.preferredWidth: 36
-            horizontalAlignment: Text.AlignRight
-        }
-    }
-
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: Spacing.spacingSm
-
-        Label {
-            text: "Disk"
-            Layout.preferredWidth: 40
-        }
-
-        Progress {
-            Layout.fillWidth: true
-            value: SystemUsage.storagePerc
-        }
-
-        Label {
-            text: Math.round(SystemUsage.storagePerc * 100) + "%"
-            Layout.preferredWidth: 36
-            horizontalAlignment: Text.AlignRight
+            Label {
+                text: Math.round(row.value * 100) + "%"
+                Layout.preferredWidth: 36
+                horizontalAlignment: Text.AlignRight
+            }
         }
     }
 }

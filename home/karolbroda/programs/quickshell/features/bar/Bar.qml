@@ -1,13 +1,13 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.theme
-import qs.core
 import "sections"
 
 Rectangle {
     id: root
 
-    property var screen: null
+    required property ShellScreen screen
 
     implicitHeight: Spacing.barHeight
     color: Colors.barBg
@@ -24,9 +24,20 @@ Rectangle {
         anchors.leftMargin: Spacing.barPadding + Spacing.frameWidth
         spacing: Spacing.barItemSpacing
 
-        HomeButton {}
-        SearchButton {}
+        PanelButton {
+            panel: "home"
+            icon: "house"
+            screen: root.screen
+        }
+
+        PanelButton {
+            panel: "launcher"
+            icon: "magnifying-glass"
+            screen: root.screen
+        }
+
         PinnedApps {}
+
         BarVisualizer {}
     }
 
@@ -37,10 +48,20 @@ Rectangle {
         anchors.rightMargin: Spacing.barPadding + Spacing.frameWidth
         spacing: Spacing.barItemSpacing
 
-        DashboardButton {}
-        NotifBadge {}
+        PanelButton {
+            panel: "dashboard"
+            icon: "sliders-horizontal"
+            screen: root.screen
+        }
+
+        NotifBadge {
+            screen: root.screen
+        }
+
         KeyboardLayout {}
+
         StatusIcons {}
+
         Clock {}
     }
 }

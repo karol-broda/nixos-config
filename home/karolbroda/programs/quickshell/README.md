@@ -55,9 +55,8 @@ my personal quickshell configuration for hyprland. catppuccin frappe theme
 
 everything is in qml files:
 
-- colors in `services/Colours.qml`
+- colors, spacing, typography and motion in `theme/`
 - fonts and general settings in `config/Config.qml`
-- component layouts throughout the modules
 
 but honestly this is a config just for me so i wont really support issues that other people have, but that may change
 

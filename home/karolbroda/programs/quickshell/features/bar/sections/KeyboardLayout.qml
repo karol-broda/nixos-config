@@ -5,9 +5,7 @@ import qs.services
 Item {
     id: root
 
-    readonly property string layout: Keyboard.layout !== null && Keyboard.layout !== undefined
-        ? Keyboard.layout.toUpperCase()
-        : "??"
+    readonly property string layout: Keyboard.layout !== "" ? Keyboard.layout.toUpperCase() : "??"
 
     implicitWidth: sizer.width
     implicitHeight: label.implicitHeight

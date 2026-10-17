@@ -1,21 +1,17 @@
 import QtQuick
 import QtQuick.Layouts
 import qs.theme
-import qs.core
 import qs.widgets.text
 import qs.widgets.indicators
 import "sections"
 
-Panel {
+Item {
     id: root
 
-    slideFrom: "top-right"
-    open: screenActive && Dispatcher.activePanel === "dashboard"
+    property bool active: false
 
-    property bool screenActive: true
-
-    targetWidth: 340
-    targetHeight: content.implicitHeight + Spacing.panelPadding * 2
+    implicitWidth: 340
+    implicitHeight: content.implicitHeight + Spacing.panelPadding * 2
 
     ColumnLayout {
         id: content
@@ -27,11 +23,11 @@ Panel {
             text: "Dashboard"
         }
 
-        VolumeSlider {
+        VolumeControl {
             Layout.fillWidth: true
         }
 
-        BrightnessSlider {
+        BrightnessControl {
             Layout.fillWidth: true
         }
 
@@ -41,6 +37,7 @@ Panel {
 
         QuickToggles {
             Layout.fillWidth: true
+            active: root.active
         }
 
         Separator {
@@ -49,6 +46,7 @@ Panel {
 
         MediaCard {
             Layout.fillWidth: true
+            active: root.active
         }
 
         WeatherCard {
@@ -57,6 +55,7 @@ Panel {
 
         SystemInfo {
             Layout.fillWidth: true
+            active: root.active
         }
     }
 }

@@ -1,4 +1,3 @@
 module qs.features.bar
 
 Bar 1.0 Bar.qml
-BarState 1.0 BarState.qml

@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import qs.theme
@@ -5,89 +7,73 @@ import qs.services
 import qs.widgets.icons
 import qs.widgets.text
 
-Item {
+ColumnLayout {
     id: root
 
-    implicitHeight: trayContent.implicitHeight
+    spacing: Spacing.spacingSm
 
-    ColumnLayout {
-        id: trayContent
-        anchors.left: parent.left
-        anchors.right: parent.right
-        spacing: Spacing.spacingSm
+    Label {
+        text: "System Tray"
+    }
 
-        Label {
-            text: "System Tray"
-        }
+    GridLayout {
+        Layout.fillWidth: true
+        columns: 6
+        rowSpacing: Spacing.spacingSm
+        columnSpacing: Spacing.spacingSm
 
-        GridLayout {
-            Layout.fillWidth: true
-            columns: 6
-            rowSpacing: Spacing.spacingSm
-            columnSpacing: Spacing.spacingSm
+        Repeater {
+            id: trayRepeater
+            model: Tray.items
 
-            Repeater {
-                id: trayRepeater
-                model: Tray.items
+            Item {
+                id: trayItem
 
-                Item {
-                    id: trayItem
+                required property var modelData
 
-                    required property var modelData
+                readonly property string iconSource: Tray.iconSource(modelData)
+                readonly property bool isDirect: AppIcons.isDirectSource(iconSource)
 
-                    Layout.preferredWidth: 32
-                    Layout.preferredHeight: 32
+                Layout.preferredWidth: 32
+                Layout.preferredHeight: 32
 
-                    Rectangle {
-                        anchors.fill: parent
-                        radius: Spacing.radiusSm
-                        color: {
-                            if (Tray.activeMenuItem !== null && Tray.activeMenuItem === trayItem.modelData) {
-                                return Colors.bgActive
-                            }
-                            if (trayMouse.containsMouse) return Colors.bgHover
-                            return "transparent"
-                        }
-
-                        Behavior on color {
-                            ColorAnimation { duration: Motion.hoverDuration }
-                        }
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Spacing.radiusInner
+                    color: {
+                        if (Tray.activeMenuItem === trayItem.modelData) return Colors.bgActive
+                        if (trayMouse.containsMouse) return Colors.bgHover
+                        return "transparent"
                     }
 
-                    AppIcon {
-                        anchors.centerIn: parent
-                        size: Spacing.iconMd
-
-                        property string _trayIcon: Tray.getIconSource(trayItem.modelData)
-                        property bool _isDirect: Tray.isDirectIconPath(_trayIcon)
-
-                        source: _isDirect ? _trayIcon : ""
-                        iconName: _isDirect !== true ? _trayIcon : ""
+                    Behavior on color {
+                        ColorAnimation { duration: Motion.hoverDuration }
                     }
+                }
 
-                    MouseArea {
-                        id: trayMouse
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        acceptedButtons: Qt.LeftButton | Qt.RightButton
+                AppIcon {
+                    anchors.centerIn: parent
+                    size: Spacing.iconMd
+                    source: trayItem.isDirect ? trayItem.iconSource : ""
+                    iconName: trayItem.isDirect ? "" : trayItem.iconSource
+                }
 
-                        onClicked: function(mouse) {
-                            if (trayItem.modelData === null || trayItem.modelData === undefined) {
-                                return
-                            }
-                            Tray.openMenu(trayItem.modelData)
-                        }
-                    }
+                MouseArea {
+                    id: trayMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: Tray.openMenu(trayItem.modelData)
                 }
             }
         }
+    }
 
-        Label {
-            Layout.fillWidth: true
-            visible: trayRepeater.count === 0
-            text: "No tray items"
-            color: Colors.textDim
-            horizontalAlignment: Text.AlignHCenter
-        }
+    Label {
+        Layout.fillWidth: true
+        visible: trayRepeater.count === 0
+        text: "No tray items"
+        color: Colors.textDim
+        horizontalAlignment: Text.AlignHCenter
     }
 }

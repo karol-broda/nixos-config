@@ -2,3 +2,4 @@ _references
 tmp
 .qmlls.ini
 default
+dev/out/

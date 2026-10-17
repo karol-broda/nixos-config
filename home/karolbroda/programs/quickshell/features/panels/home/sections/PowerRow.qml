@@ -1,7 +1,8 @@
 import QtQuick
 import QtQuick.Layouts
 import qs.theme
-import qs.core
+import qs.services
+import qs.state
 import qs.widgets.buttons
 import qs.widgets.text
 
@@ -18,55 +19,22 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: Spacing.spacingSm
 
-        IconButton {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 40
-            icon: "lock-simple"
+        Repeater {
+            model: [
+                { icon: "lock-simple", run: () => Shell.lock() },
+                { icon: "sign-out", run: () => Power.logout() },
+                { icon: "moon", run: () => { Shell.closePanel(); Power.suspend() } },
+                { icon: "arrow-counter-clockwise", run: () => Power.reboot() },
+                { icon: "power", run: () => Power.shutdown() }
+            ]
 
-            onClicked: {
-                Dispatcher.dispatch(Actions.lock())
-                Dispatcher.dispatch(Actions.closePanel())
-            }
-        }
+            IconButton {
+                required property var modelData
 
-        IconButton {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 40
-            icon: "sign-out"
-
-            onClicked: {
-                Dispatcher.dispatch(Actions.logout())
-            }
-        }
-
-        IconButton {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 40
-            icon: "moon"
-
-            onClicked: {
-                Dispatcher.dispatch(Actions.suspend())
-                Dispatcher.dispatch(Actions.closePanel())
-            }
-        }
-
-        IconButton {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 40
-            icon: "arrow-counter-clockwise"
-
-            onClicked: {
-                Dispatcher.dispatch(Actions.reboot())
-            }
-        }
-
-        IconButton {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 40
-            icon: "power"
-
-            onClicked: {
-                Dispatcher.dispatch(Actions.shutdown())
+                Layout.fillWidth: true
+                Layout.preferredHeight: 40
+                icon: modelData.icon
+                onClicked: modelData.run()
             }
         }
     }

@@ -7,88 +7,45 @@ import QtQuick
 Singleton {
     id: root
 
-    readonly property var wifiDevice: {
-        var devs = Networking.devices.values
-        for (var i = 0; i < devs.length; i++) {
-            if (devs[i] !== null && devs[i] !== undefined && devs[i].type === DeviceType.Wifi) {
-                return devs[i]
-            }
-        }
-        return null
-    }
+    property int users: 0
 
-    readonly property var activeNetwork: {
-        if (wifiDevice === null || wifiDevice === undefined) return null
-        var nets = wifiDevice.networks.values
-        for (var i = 0; i < nets.length; i++) {
-            if (nets[i] !== null && nets[i] !== undefined && nets[i].connected === true) {
-                return nets[i]
-            }
-        }
-        return null
-    }
-
-    readonly property bool ready: wifiDevice !== null && wifiDevice !== undefined
-
+    readonly property WifiDevice _wifiDevice: Networking.devices.values.find(d => d.type === DeviceType.Wifi) ?? null
+    readonly property WifiNetwork _activeNetwork: _wifiDevice?.networks.values.find(n => n.connected) ?? null
+    readonly property bool ready: _wifiDevice !== null
     readonly property bool wifiEnabled: Networking.wifiEnabled
-    readonly property bool connected: ready && wifiDevice.connected === true
-    readonly property bool scanning: ready && wifiDevice.scannerEnabled === true
+    readonly property bool connected: _wifiDevice?.connected ?? false
+    readonly property string ssid: _activeNetwork?.name ?? ""
+    readonly property real strength: Math.max(0, Math.min(1, _activeNetwork?.signalStrength ?? 0))
+    readonly property string icon: wifiEnabled && connected ? root.signalIcon(strength) : "wifi-slash"
+    readonly property list<WifiNetwork> networks: (_wifiDevice?.networks.values ?? [])
+        .filter(n => n.name.trim() !== "")
+        .sort((a, b) => Number(b.connected) - Number(a.connected) || b.signalStrength - a.signalStrength)
 
-    readonly property string ssid: {
-        if (activeNetwork === null || activeNetwork === undefined) return ""
-        return activeNetwork.name || ""
+    Binding {
+        target: root._wifiDevice
+        property: "scannerEnabled"
+        value: root.users > 0
+        when: root._wifiDevice !== null
     }
-
-    readonly property real strength: {
-        if (activeNetwork === null || activeNetwork === undefined) return 0
-        return activeNetwork.signalStrength
-    }
-
-    readonly property string icon: {
-        if (!ready) return "wifi-high"
-        if (wifiEnabled !== true) return "wifi-slash"
-        if (!connected) return "wifi-slash"
-        if (strength < 0.30) return "wifi-low"
-        if (strength < 0.60) return "wifi-medium"
-        return "wifi-high"
-    }
-
-    readonly property var networks: {
-        if (wifiDevice === null || wifiDevice === undefined) return []
-        return wifiDevice.networks.values
-    }
-
-    reloadableId: "network"
 
     function toggleWifi(): void {
-        Networking.wifiEnabled = !Networking.wifiEnabled
+        root.setWifiEnabled(!root.wifiEnabled)
     }
 
-    function enableWifi(enabled: bool): void {
+    function setWifiEnabled(enabled: bool): void {
         Networking.wifiEnabled = enabled
     }
 
-    function startScan(): void {
-        if (wifiDevice !== null && wifiDevice !== undefined) {
-            wifiDevice.scannerEnabled = true
-        }
+    function connectTo(network: WifiNetwork): void {
+        if (network) network.connect()
     }
 
-    function stopScan(): void {
-        if (wifiDevice !== null && wifiDevice !== undefined) {
-            wifiDevice.scannerEnabled = false
-        }
+    function disconnect(): void {
+        root._activeNetwork?.disconnect()
     }
 
-    function connectToNetwork(network): void {
-        if (network !== null && network !== undefined) {
-            network.connect()
-        }
-    }
-
-    function disconnectFromNetwork(): void {
-        if (activeNetwork !== null && activeNetwork !== undefined) {
-            activeNetwork.disconnect()
-        }
+    function signalIcon(value: real): string {
+        if (value < 0.30) return "wifi-low"
+        return value < 0.60 ? "wifi-medium" : "wifi-high"
     }
 }

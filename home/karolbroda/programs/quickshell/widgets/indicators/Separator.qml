@@ -6,7 +6,7 @@ Rectangle {
 
     property bool vertical: false
 
-    implicitWidth: vertical ? 1 : parent.width
-    implicitHeight: vertical ? parent.height : 1
+    implicitWidth: 1
+    implicitHeight: 1
     color: Colors.divider
 }

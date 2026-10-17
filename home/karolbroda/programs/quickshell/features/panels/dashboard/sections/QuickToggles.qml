@@ -1,16 +1,23 @@
 import QtQuick
 import QtQuick.Layouts
 import qs.theme
-import qs.core
 import qs.services
 import qs.widgets.buttons
 
 ColumnLayout {
     id: root
 
-    spacing: Spacing.spacingSm
+    property bool active: false
 
     property string expandedSection: ""
+
+    onActiveChanged: if (!active) expandedSection = ""
+
+    function toggleSection(name: string): void {
+        root.expandedSection = root.expandedSection === name ? "" : name
+    }
+
+    spacing: Spacing.spacingSm
 
     GridLayout {
         Layout.fillWidth: true
@@ -20,25 +27,24 @@ ColumnLayout {
 
         ToggleButton {
             Layout.fillWidth: true
-            icon: Network.icon !== null && Network.icon !== undefined ? Network.icon : "wifi-high"
+            icon: Network.icon
             label: "WiFi"
-            isOn: Network.connected === true
-            onToggled: Dispatcher.dispatch(Actions.toggleWifi())
+            isOn: Network.wifiEnabled
+            onToggled: Network.toggleWifi()
         }
 
         ToggleButton {
             Layout.fillWidth: true
-            icon: Bluetooth.icon !== null && Bluetooth.icon !== undefined ? Bluetooth.icon : "bluetooth"
+            icon: Bluetooth.icon
             label: "Bluetooth"
-            isOn: Bluetooth.enabled === true
-            onToggled: Dispatcher.dispatch(Actions.toggleBluetooth())
+            isOn: Bluetooth.enabled
+            onToggled: Bluetooth.togglePower()
         }
 
         ToggleButton {
             Layout.fillWidth: true
             icon: "moon"
             label: "Night"
-            isOn: false
             enabled: false
         }
 
@@ -46,20 +52,19 @@ ColumnLayout {
             Layout.fillWidth: true
             icon: "bell-slash"
             label: "DND"
-            isOn: false
             enabled: false
         }
     }
 
     NetworkDetail {
         Layout.fillWidth: true
-        expanded: root.expandedSection === "wifi"
-        onHeaderClicked: root.expandedSection = root.expandedSection === "wifi" ? "" : "wifi"
+        expanded: root.active && root.expandedSection === "wifi"
+        onToggled: root.toggleSection("wifi")
     }
 
     BluetoothDetail {
         Layout.fillWidth: true
-        expanded: root.expandedSection === "bluetooth"
-        onHeaderClicked: root.expandedSection = root.expandedSection === "bluetooth" ? "" : "bluetooth"
+        expanded: root.active && root.expandedSection === "bluetooth"
+        onToggled: root.toggleSection("bluetooth")
     }
 }

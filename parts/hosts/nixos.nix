@@ -18,6 +18,17 @@
     inherit (inputs.elephant.packages.${system}) elephant-providers;
     wallpaper-source = ../../providers/wallpaper;
   };
+  fixedLinuxFirmware = _final: prev: {
+    linux-firmware = prev.linux-firmware.overrideAttrs {
+      version = "20260916";
+      src = prev.fetchFromGitLab {
+        owner = "kernel-firmware";
+        repo = "linux-firmware";
+        tag = "20260916";
+        hash = "sha256-VbDTRN/i+a1BrKnDtdDFxanp3BQujBhe9CyWay9GTXY=";
+      };
+    };
+  };
 
   nixosHostArgs = {
     hostname = "nixos";
@@ -30,6 +41,7 @@
       commonOverlays
       ++ [
         inputs.quickshell.overlays.default
+        fixedLinuxFirmware
       ];
     modules = [
       ../../modules

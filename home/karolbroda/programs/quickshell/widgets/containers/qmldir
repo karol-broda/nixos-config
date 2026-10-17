@@ -2,3 +2,7 @@ module qs.widgets.containers
 
 Card 1.0 Card.qml
 Pill 1.0 Pill.qml
+ChoiceRow 1.0 ChoiceRow.qml
+ExpandableSection 1.0 ExpandableSection.qml
+LevelRow 1.0 LevelRow.qml
+NotificationContent 1.0 NotificationContent.qml

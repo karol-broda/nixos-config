@@ -1,23 +1,17 @@
 pragma Singleton
 
 import Quickshell
-import Quickshell.Io
 import QtQuick
+import qs.core
 
 Singleton {
     id: root
 
-    property list<var> results: []
-    property string currentQuery: ""
-    property string activeProvider: ""
-    property string pendingProvider: "desktopapplications"
-    property string pendingSearchText: ""
+    property var response: ({ query: "", items: [] })
 
     readonly property int queryLimit: 12
 
-    readonly property var hiddenApps: [
-        "cursor"
-    ]
+    readonly property var hiddenApps: ["cursor"]
 
     readonly property var providerPrefixes: ({
         ">files ": "files",
@@ -34,197 +28,104 @@ Singleton {
         ">web ": "websearch",
         ">search ": "websearch",
         ">s ": "websearch",
-        ">wall ": "wallpaper",
         ">wallpaper ": "wallpaper",
-        ">wall": "wallpaper",
-        ">wallpaper": "wallpaper"
+        ">wallpaper": "wallpaper",
+        ">wall ": "wallpaper",
+        ">wall": "wallpaper"
     })
+
+    readonly property var _prefixesByLength: Object.keys(providerPrefixes).sort((a, b) => b.length - a.length)
 
     readonly property var providerMeta: ({
-        "desktopapplications": {
-            icon: "app-window",
-            label: "Apps"
-        },
-        "files": {
-            icon: "folder",
-            label: "Files"
-        },
-        "clipboard": {
-            icon: "clipboard",
-            label: "Clipboard"
-        },
-        "windows": {
-            icon: "browsers",
-            label: "Windows"
-        },
-        "runner": {
-            icon: "terminal",
-            label: "Run"
-        },
-        "calc": {
-            icon: "calculator",
-            label: "Calc"
-        },
-        "websearch": {
-            icon: "globe",
-            label: "Web"
-        },
-        "wallpaper": {
-            icon: "image",
-            label: "Wallpaper"
-        }
+        desktopapplications: { icon: "app-window", label: "Apps" },
+        files: { icon: "folder", label: "Files" },
+        clipboard: { icon: "clipboard", label: "Clipboard" },
+        windows: { icon: "browsers", label: "Windows" },
+        runner: { icon: "terminal", label: "Run" },
+        calc: { icon: "calculator", label: "Calc" },
+        websearch: { icon: "globe", label: "Web" },
+        wallpaper: { icon: "image", label: "Wallpaper" }
     })
 
-    signal resultsReady
+    property string _pendingText: ""
 
-    function query(searchText: string): void {
-        if (searchText === null || searchText === undefined) {
-            searchText = ""
-        }
+    function query(text: string): void {
+        root._pendingText = text
+        debounce.restart()
+    }
 
-        let provider = ""
-        let actualQuery = searchText
-
-        for (const prefix in root.providerPrefixes) {
-            if (searchText.startsWith(prefix)) {
-                provider = root.providerPrefixes[prefix]
-                actualQuery = searchText.slice(prefix.length)
-                break
-            }
-        }
-
-        root.activeProvider = provider
-        root.currentQuery = actualQuery
-        root.pendingProvider = provider !== "" ? provider : "desktopapplications"
-        root.pendingSearchText = actualQuery
-
-        queryTimer.restart()
+    function parseQuery(text: string): var {
+        const prefix = root._prefixesByLength.find(p => text.startsWith(p))
+        if (prefix === undefined) return { provider: "desktopapplications", query: text }
+        return { provider: root.providerPrefixes[prefix], query: text.slice(prefix.length) }
     }
 
     function activate(item: var): void {
-        if (item === null || item === undefined) {
-            return
-        }
-
-        const identifier = item.identifier
-        const provider = item.provider
-
-        if (identifier === null || identifier === undefined || identifier === "") {
-            return
-        }
-
-        const actions = item.actions
-        const action = (actions !== null && actions !== undefined && actions.length > 0)
-            ? actions[0]
-            : ""
-        const activationStr = provider + ";" + identifier + ";" + action + ";;"
-        activateProc.command = ["elephant", "activate", activationStr]
-        activateProc.running = true
+        if (!item?.identifier) return
+        const action = item.actions?.[0] ?? ""
+        Env.launch(["elephant", "activate", item.provider + ";" + item.identifier + ";" + action + ";;"])
     }
 
-    function parseResults(stdout: string): list<var> {
+    function _isHidden(provider: string, identifier: string): bool {
+        if (provider !== "desktopapplications") return false
+        const id = identifier.toLowerCase()
+        return root.hiddenApps.some(app => id.includes(app))
+    }
+
+    function _parseResults(output: string): var {
         const items = []
-        if (stdout === null || stdout === undefined || stdout.trim() === "") {
-            return items
-        }
+        for (const line of output.split("\n")) {
+            if (line.trim() === "") continue
 
-        const lines = stdout.trim().split("\n")
-
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i]
-            if (line.trim() === "") {
+            let item
+            try {
+                item = JSON.parse(line).item
+            } catch (e) {
                 continue
             }
+            if (!item) continue
 
-            try {
-                const resp = JSON.parse(line)
-                const item = resp.item
-                if (item !== null && item !== undefined) {
-                    const id = (item.identifier || "").toLowerCase()
-                    if (root.isHiddenApp(id)) {
-                        continue
-                    }
+            const provider = item.provider ?? ""
+            const identifier = item.identifier ?? ""
+            if (root._isHidden(provider, identifier)) continue
 
-                    const prov = item.provider || ""
-                    const meta = root.providerMeta[prov]
-                    const provIcon = meta !== null && meta !== undefined ? meta.icon : "question"
-                    const provLabel = meta !== null && meta !== undefined ? meta.label : prov
-
-                    items.push({
-                        label: item.text || "",
-                        sublabel: item.subtext || "",
-                        icon: item.icon || "",
-                        identifier: item.identifier || "",
-                        provider: prov,
-                        providerIcon: provIcon,
-                        providerLabel: provLabel,
-                        score: item.score || 0,
-                        actions: item.actions || [],
-                        preview: item.preview || "",
-                        previewType: item.preview_type || ""
-                    })
-                }
-            } catch (e) {
-                // ignore parse errors
-            }
+            const meta = root.providerMeta[provider]
+            items.push({
+                label: item.text ?? "",
+                sublabel: item.subtext ?? "",
+                icon: item.icon ?? "",
+                identifier: identifier,
+                provider: provider,
+                providerIcon: meta?.icon ?? "question",
+                providerLabel: meta?.label ?? provider,
+                score: item.score ?? 0,
+                actions: item.actions ?? [],
+                preview: item.preview ?? "",
+                previewType: item.preview_type ?? ""
+            })
         }
-
-        items.sort((a, b) => b.score - a.score)
-        return items
+        return items.sort((a, b) => b.score - a.score)
     }
 
     Timer {
-        id: queryTimer
+        id: debounce
         interval: 30
-        repeat: false
-
         onTriggered: {
-            const queryStr = root.pendingProvider + ";" + root.pendingSearchText + ";" + root.queryLimit + ";false"
-            queryProc.command = ["elephant", "query", "--json", queryStr]
-            queryProc.running = true
+            const parsed = root.parseQuery(root._pendingText)
+            const queryStr = parsed.provider + ";" + parsed.query + ";" + root.queryLimit + ";false"
+            job.run(["elephant", "query", "--json", queryStr], root._pendingText)
         }
     }
 
-    Process {
-        id: queryProc
+    Job {
+        id: job
 
-        environment: ({
-            PATH: "/run/current-system/sw/bin:/etc/profiles/per-user/karolbroda/bin"
-        })
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                root.results = root.parseResults(text)
-                root.resultsReady()
-            }
-        }
-
-        onExited: (exitCode, exitStatus) => {
-            if (exitCode !== 0) {
-                root.results = []
-                root.resultsReady()
-            }
+        environment: Env.withProfilePath
+        timeout: 5000
+        onFinished: (tag, output, exitCode) => {
+            root.response = { query: tag, items: exitCode === 0 ? root._parseResults(output) : [] }
         }
     }
 
-    Process {
-        id: activateProc
-
-        environment: ({
-            PATH: "/run/current-system/sw/bin:/etc/profiles/per-user/karolbroda/bin"
-        })
-    }
-
-    function isHiddenApp(identifier: string): bool {
-        for (let i = 0; i < root.hiddenApps.length; i++) {
-            if (identifier.indexOf(root.hiddenApps[i]) !== -1) {
-                return true
-            }
-        }
-        return false
-    }
-
-    Component.onCompleted: {
-        query("")
-    }
+    Component.onCompleted: query("")
 }

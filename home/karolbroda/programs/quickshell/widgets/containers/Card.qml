@@ -10,7 +10,7 @@ Rectangle {
     default property alias content: contentItem.data
 
     color: hoverable && hovered ? Colors.bgHover : Colors.bgElevated
-    radius: Spacing.radiusMd
+    radius: Spacing.radiusInner
 
     Behavior on color {
         ColorAnimation { duration: Motion.hoverDuration }

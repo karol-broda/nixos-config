@@ -28,6 +28,7 @@
       "git-firefly"
       "qml"
       "assembly"
+      "catppuccin"
     ];
 
     userSettings = {

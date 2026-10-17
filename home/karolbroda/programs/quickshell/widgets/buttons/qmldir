@@ -1,5 +1,6 @@
 module qs.widgets.buttons
 
+ButtonBase 1.0 ButtonBase.qml
 IconButton 1.0 IconButton.qml
 TextButton 1.0 TextButton.qml
 ToggleButton 1.0 ToggleButton.qml

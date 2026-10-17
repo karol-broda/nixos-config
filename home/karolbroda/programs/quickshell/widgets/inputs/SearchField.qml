@@ -11,7 +11,6 @@ Rectangle {
 
     signal searchTextChanged(string newText)
     signal searchAccepted()
-    signal escapePressed()
 
     implicitWidth: 300
     implicitHeight: 44
@@ -54,8 +53,6 @@ Rectangle {
             onTextChanged: root.searchTextChanged(text)
             onAccepted: root.searchAccepted()
 
-            Keys.onEscapePressed: root.escapePressed()
-
             Text {
                 anchors.fill: parent
                 verticalAlignment: Text.AlignVCenter
@@ -66,7 +63,7 @@ Rectangle {
                 font.weight: Typography.placeholderWeight
                 font.italic: true
                 font.letterSpacing: Typography.placeholderSpacing
-                visible: parent.text === "" && parent.activeFocus === false
+                visible: input.text === "" && !input.activeFocus
             }
         }
 
@@ -90,11 +87,11 @@ Rectangle {
         }
     }
 
-    function forceActiveFocus() {
+    function forceActiveFocus(): void {
         input.forceActiveFocus()
     }
 
-    function clear() {
+    function clear(): void {
         input.text = ""
     }
 }

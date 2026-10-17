@@ -1,9 +1,9 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import qs.theme
-import qs.core
 import qs.services
 import qs.widgets.indicators
 import qs.config
@@ -11,19 +11,9 @@ import qs.config
 RowLayout {
     id: root
 
-    property var screen: null
+    required property ShellScreen screen
 
-    readonly property HyprlandMonitor monitor: {
-        if (screen === null || screen === undefined) return null
-        return Hyprland.monitorFor(screen)
-    }
-
-    readonly property int activeWsIdForMonitor: {
-        if (monitor === null || monitor === undefined) return -1
-        const aw = monitor.activeWorkspace
-        if (aw === null || aw === undefined) return -1
-        return aw.id
-    }
+    readonly property int activeId: Hypr.monitorFor(screen)?.activeWorkspace?.id ?? -1
 
     spacing: Spacing.spacingSm
 
@@ -31,31 +21,18 @@ RowLayout {
         model: Config.maxWorkspaces
 
         Dot {
-            required property int index
+            id: dot
 
+            required property int index
             readonly property int wsId: index + 1
 
-            isActive: root.activeWsIdForMonitor === wsId
-
-            isOccupied: {
-                const ws = Hyprland.workspaces
-                if (ws === null || ws === undefined) {
-                    return false
-                }
-                for (let i = 0; i < ws.length; i++) {
-                    if (ws[i] !== null && ws[i] !== undefined && ws[i].id === wsId) {
-                        return true
-                    }
-                }
-                return false
-            }
+            isActive: root.activeId === wsId
+            isOccupied: Hypr.isWorkspaceOccupied(wsId)
 
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    Dispatcher.dispatch(Actions.switchWorkspace(wsId))
-                }
+                onClicked: Hypr.focusWorkspace(dot.wsId)
             }
         }
     }

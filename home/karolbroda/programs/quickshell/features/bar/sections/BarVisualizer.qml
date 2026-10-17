@@ -32,9 +32,8 @@ Item {
                 name: "playing"
                 when: Players.isPlaying === true
                 PropertyChanges {
-                    target: content
-                    opacity: 1
-                    scale: 1
+                    content.opacity: 1
+                    content.scale: 1
                 }
             }
         ]
@@ -86,6 +85,7 @@ Item {
 
         CavaShader {
             anchors.fill: parent
+            active: Players.isPlaying
         }
     }
 }

@@ -1,142 +1,46 @@
 pragma Singleton
 
-import QtQuick
 import Quickshell
 import Quickshell.Services.SystemTray
-import qs.theme
 
 Singleton {
     id: root
 
     readonly property var items: SystemTray.items
-
-    readonly property bool hasItems: itemCount > 0
-    property int itemCount: 0
-
-    property var activeMenuHandle: null
     property var activeMenuItem: null
-    property var subMenuStack: []
-    property var closingSubMenus: []
+    readonly property var activeMenu: activeMenuItem?.menu ?? null
 
-    function _stageForClose(items) {
-        if (items.length === 0) return
-        root.closingSubMenus = items
-        _closingCleanup.restart()
-    }
-
-    Timer {
-        id: _closingCleanup
-        interval: Motion.panelCloseDuration
-        onTriggered: root.closingSubMenus = []
-    }
-
-    function openMenu(item) {
-        if (item === null || item === undefined) return
-
-        if (item.hasMenu !== true) {
-            activate(item)
+    function openMenu(item: SystemTrayItem): void {
+        if (!item) return
+        if (!item.hasMenu) {
+            root.activate(item)
             return
         }
-
-        if (root.activeMenuItem === item) {
-            closeMenu()
-            return
-        }
-
-        _stageForClose(root.subMenuStack)
-        root.activeMenuItem = item
-        root.activeMenuHandle = item.menu
-        root.subMenuStack = []
+        root.activeMenuItem = root.activeMenuItem === item ? null : item
     }
 
-    function closeMenu() {
-        _stageForClose(root.subMenuStack)
-        root.activeMenuHandle = null
+    function closeMenu(): void {
         root.activeMenuItem = null
-        root.subMenuStack = []
     }
 
-    function openSubMenu(entry, xPos, yPos, level) {
-        if (entry === null || entry === undefined) return
-        var removed = root.subMenuStack.slice(level)
-        _stageForClose(removed)
-        var stack = root.subMenuStack.slice(0, level)
-        stack.push({ entry: entry, x: xPos, y: yPos })
-        root.subMenuStack = stack
-        entry.updateLayout()
+    function activate(item: SystemTrayItem): void {
+        item?.activate()
     }
 
-    function closeSubMenusFrom(level) {
-        if (root.subMenuStack.length <= level) return
-        var removed = root.subMenuStack.slice(level)
-        _stageForClose(removed)
-        root.subMenuStack = root.subMenuStack.slice(0, level)
+    function secondaryActivate(item: SystemTrayItem): void {
+        item?.secondaryActivate()
     }
 
-    function closeAllSubMenus() {
-        _stageForClose(root.subMenuStack)
-        root.subMenuStack = []
+    function scroll(item: SystemTrayItem, delta: int, horizontal: bool): void {
+        item?.scroll(delta, horizontal)
     }
 
-    function getIconSource(item) {
-        if (item === null || item === undefined) {
-            return "";
-        }
-
-        if (item.icon !== null && item.icon !== undefined && item.icon !== "") {
-            return item.icon;
-        }
-
-        return "";
+    function iconSource(item: SystemTrayItem): string {
+        return item?.icon ?? ""
     }
 
-    function isDirectIconPath(iconStr) {
-        if (iconStr === null || iconStr === undefined || iconStr === "") {
-            return false;
-        }
-        return iconStr.startsWith("/")
-            || iconStr.startsWith("file://")
-            || iconStr.startsWith("image://");
-    }
-
-    function getTooltip(item) {
-        if (item === null || item === undefined) {
-            return "";
-        }
-
-        if (item.tooltipTitle !== null && item.tooltipTitle !== undefined && item.tooltipTitle !== "") {
-            return item.tooltipTitle;
-        }
-
-        if (item.title !== null && item.title !== undefined && item.title !== "") {
-            return item.title;
-        }
-
-        if (item.id !== null && item.id !== undefined && item.id !== "") {
-            return item.id;
-        }
-
-        return "unknown";
-    }
-
-    function activate(item) {
-        if (item === null || item === undefined) {
-            return;
-        }
-        item.activate();
-    }
-
-    function secondaryActivate(item) {
-        if (item === null || item === undefined) {
-            return;
-        }
-        item.secondaryActivate();
-    }
-
-    function scroll(item, delta, horizontal) {
-        if (item === null || item === undefined) {
-            return;
-        }
-        item.scroll(delta, horizontal);
+    function tooltip(item: SystemTrayItem): string {
+        if (!item) return ""
+        return item.tooltipTitle || item.title || item.id || "unknown"
     }
 }

@@ -3,215 +3,188 @@ pragma Singleton
 import Quickshell
 import Quickshell.Io
 import QtQuick
+import qs.core
 
 Singleton {
     id: root
 
-    property real cpuPerc
-    property real cpuTemp
-    property string gpuType: "NONE"
-    property real gpuPerc
-    property real gpuTemp
-    property real memUsed
-    property real memTotal
-    readonly property real memPerc: memTotal > 0 ? memUsed / memTotal : 0
-    property real storageUsed
-    property real storageTotal
-    property real storagePerc: storageTotal > 0 ? storageUsed / storageTotal : 0
+    property int users: 0
 
-    property real lastCpuIdle
-    property real lastCpuTotal
+    readonly property real cpuPerc: _cpu.percentage
+    readonly property real cpuTemp: _temperatures.cpu
+    readonly property string gpuType: _gpu.type
+    readonly property real gpuPerc: _gpu.percentage
+    readonly property real gpuTemp: gpuType === "NVIDIA" ? _gpu.temperature : _temperatures.gpu
+    readonly property real memUsed: _memory.used
+    readonly property real memTotal: _memory.total
+    readonly property real memPerc: memTotal > 0 ? Math.max(0, Math.min(1, memUsed / memTotal)) : 0
+    readonly property real storageUsed: _storage.used
+    readonly property real storageTotal: _storage.total
+    readonly property real storagePerc: storageTotal > 0 ? Math.max(0, Math.min(1, storageUsed / storageTotal)) : 0
 
-    property int refCount
+    property var _cpu: ({ primed: false, idle: 0, total: 0, percentage: 0 })
+    property var _memory: ({ used: 0, total: 0 })
+    property var _storage: ({ used: 0, total: 0 })
+    property var _gpu: ({ type: "NONE", percentage: 0, temperature: 0 })
+    property var _temperatures: ({ cpu: 0, gpu: 0 })
 
     function formatKib(kib: real): var {
-        const mib = 1024;
-        const gib = 1024 ** 2;
-        const tib = 1024 ** 3;
-
-        if (kib >= tib)
-            return {
-                value: kib / tib,
-                unit: "TiB"
-            };
-        if (kib >= gib)
-            return {
-                value: kib / gib,
-                unit: "GiB"
-            };
-        if (kib >= mib)
-            return {
-                value: kib / mib,
-                unit: "MiB"
-            };
-        return {
-            value: kib,
-            unit: "KiB"
-        };
+        if (kib >= 1024 ** 3) return { value: kib / 1024 ** 3, unit: "TiB" }
+        if (kib >= 1024 ** 2) return { value: kib / 1024 ** 2, unit: "GiB" }
+        if (kib >= 1024) return { value: kib / 1024, unit: "MiB" }
+        return { value: kib, unit: "KiB" }
     }
 
+    function _poll(): void {
+        stat.reload()
+        meminfo.reload()
+        storage.poll(["df", "-kP"], null)
+        sensors.poll(["sensors"], null)
+        root._pollGpu()
+    }
+
+    function _pollGpu(): void {
+        if (root.gpuType === "NVIDIA") {
+            gpuUsage.poll(["nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits"], "NVIDIA")
+        } else if (root.gpuType === "GENERIC") {
+            gpuUsage.poll(["sh", "-c", "cat /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null"], "GENERIC")
+        }
+    }
+
+    onUsersChanged: {
+        if (root.users > 0) {
+            if (!poller.running) {
+                root._cpu = { primed: false, idle: 0, total: 0, percentage: 0 }
+                gpuTypeCheck.poll(["sh", "-c", "if command -v nvidia-smi >/dev/null 2>&1 && nvidia-smi -L >/dev/null 2>&1; then echo NVIDIA; elif test -r /sys/class/drm/card0/device/gpu_busy_percent || ls /sys/class/drm/card*/device/gpu_busy_percent >/dev/null 2>&1; then echo GENERIC; else echo NONE; fi"], null)
+                root._poll()
+                poller.start()
+            }
+        } else {
+            poller.stop()
+            gpuTypeCheck.cancel()
+            gpuUsage.cancel()
+            storage.cancel()
+            sensors.cancel()
+            root._cpu = { primed: false, idle: 0, total: 0, percentage: 0 }
+        }
+    }
 
     Timer {
-        running: root.refCount > 0
+        id: poller
         interval: 5000
         repeat: true
-        triggeredOnStart: true
-        onTriggered: {
-            stat.reload();
-            meminfo.reload();
-            storage.running = true;
-            gpuUsage.running = true;
-            sensors.running = true;
-        }
+        onTriggered: root._poll()
     }
 
     FileView {
         id: stat
-
         path: "/proc/stat"
         onLoaded: {
-            const data = text().match(/^cpu\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/);
-            if (data) {
-                const stats = data.slice(1).map(n => parseInt(n, 10));
-                const total = stats.reduce((a, b) => a + b, 0);
-                const idle = stats[3] + (stats[4] ?? 0);
-
-                const totalDiff = total - root.lastCpuTotal;
-                const idleDiff = idle - root.lastCpuIdle;
-                root.cpuPerc = totalDiff > 0 ? (1 - idleDiff / totalDiff) : 0;
-
-                root.lastCpuTotal = total;
-                root.lastCpuIdle = idle;
-            }
+            if (root.users <= 0) return
+            const match = text().match(/^cpu\s+(.+)$/m)
+            if (!match) return
+            const counters = match[1].trim().split(/\s+/).slice(0, 8).map(n => Number(n))
+            if (counters.length < 4 || counters.some(n => !isFinite(n))) return
+            const total = counters.reduce((a, b) => a + b, 0)
+            const idle = counters[3] + (counters[4] ?? 0)
+            const delta = total - root._cpu.total
+            const percentage = root._cpu.primed && delta > 0 ? 1 - (idle - root._cpu.idle) / delta : 0
+            root._cpu = { primed: true, idle: idle, total: total, percentage: Math.max(0, Math.min(1, percentage)) }
         }
     }
 
     FileView {
         id: meminfo
-
         path: "/proc/meminfo"
         onLoaded: {
-            const data = text();
-            root.memTotal = parseInt(data.match(/MemTotal: *(\d+)/)[1], 10) || 1;
-            root.memUsed = (root.memTotal - parseInt(data.match(/MemAvailable: *(\d+)/)[1], 10)) || 0;
+            if (root.users <= 0) return
+            const data = text()
+            const total = Number(data.match(/^MemTotal:\s*(\d+)/m)?.[1] ?? 0)
+            const available = Number(data.match(/^MemAvailable:\s*(\d+)/m)?.[1] ?? total)
+            root._memory = { total: total, used: Math.max(0, total - available) }
         }
     }
 
-    Process {
+    Job {
         id: storage
-
-        command: ["sh", "-c", "df | grep '^/dev/' | awk '{print $1, $3, $4}'"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const deviceMap = new Map();
-
-                for (const line of text.trim().split("\n")) {
-                    if (line.trim() === "")
-                        continue;
-
-                    const parts = line.trim().split(/\s+/);
-                    if (parts.length >= 3) {
-                        const device = parts[0];
-                        const used = parseInt(parts[1], 10) || 0;
-                        const avail = parseInt(parts[2], 10) || 0;
-
-                        if (!deviceMap.has(device) || (used + avail) > (deviceMap.get(device).used + deviceMap.get(device).avail)) {
-                            deviceMap.set(device, {
-                                used: used,
-                                avail: avail
-                            });
-                        }
-                    }
-                }
-
-                let totalUsed = 0;
-                let totalAvail = 0;
-
-                for (const [device, stats] of deviceMap) {
-                    totalUsed += stats.used;
-                    totalAvail += stats.avail;
-                }
-
-                root.storageUsed = totalUsed;
-                root.storageTotal = totalUsed + totalAvail;
+        environment: Object.assign({}, Env.withProfilePath, { LC_ALL: "C" })
+        timeout: 4000
+        onFinished: (tag, output, exitCode) => {
+            if (root.users <= 0 || exitCode !== 0) return
+            const devices = new Map()
+            for (const line of output.trim().split("\n")) {
+                const parts = line.trim().split(/\s+/)
+                if (!parts[0].startsWith("/dev/") || parts.length < 4) continue
+                const used = Number(parts[2])
+                const available = Number(parts[3])
+                if (!isFinite(used) || !isFinite(available)) continue
+                const previous = devices.get(parts[0])
+                if (!previous || used + available > previous.total) devices.set(parts[0], { used: used, total: used + available })
             }
+            let used = 0
+            let total = 0
+            for (const device of devices.values()) {
+                used += device.used
+                total += device.total
+            }
+            root._storage = { used: used, total: total }
         }
     }
 
-    Process {
+    Job {
         id: gpuTypeCheck
-
-        running: true
-        command: ["sh", "-c", "if command -v nvidia-smi &>/dev/null && nvidia-smi -L &>/dev/null; then echo NVIDIA; elif ls /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null | grep -q .; then echo GENERIC; else echo NONE; fi"]
-        stdout: StdioCollector {
-            onStreamFinished: root.gpuType = text.trim()
+        environment: Env.withProfilePath
+        timeout: 4000
+        onFinished: (tag, output, exitCode) => {
+            if (root.users <= 0) return
+            const type = output.trim()
+            root._gpu = { type: exitCode === 0 && ["NVIDIA", "GENERIC"].includes(type) ? type : "NONE", percentage: 0, temperature: 0 }
+            root._pollGpu()
         }
     }
 
-    Process {
+    Job {
         id: gpuUsage
-
-        command: root.gpuType === "GENERIC" ? ["sh", "-c", "cat /sys/class/drm/card*/device/gpu_busy_percent"] : root.gpuType === "NVIDIA" ? ["nvidia-smi", "--query-gpu=utilization.gpu,temperature.gpu", "--format=csv,noheader,nounits"] : ["echo"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (root.gpuType === "GENERIC") {
-                    const percs = text.trim().split("\n");
-                    const sum = percs.reduce((acc, d) => acc + parseInt(d, 10), 0);
-                    root.gpuPerc = sum / percs.length / 100;
-                } else if (root.gpuType === "NVIDIA") {
-                    const [usage, temp] = text.trim().split(",");
-                    root.gpuPerc = parseInt(usage, 10) / 100;
-                    root.gpuTemp = parseInt(temp, 10);
-                } else {
-                    root.gpuPerc = 0;
-                    root.gpuTemp = 0;
-                }
+        environment: Env.withProfilePath
+        timeout: 4000
+        onFinished: (tag, output, exitCode) => {
+            if (root.users <= 0 || tag !== root.gpuType) return
+            const rows = exitCode === 0 ? output.trim().split("\n").filter(line => line.trim() !== "") : []
+            const percentages = []
+            const temperatures = []
+            for (const row of rows) {
+                const parts = row.split(",")
+                const percentage = Number(parts[0])
+                if (isFinite(percentage)) percentages.push(percentage)
+                const temperature = parts.length > 1 ? Number(parts[1]) : NaN
+                if (isFinite(temperature)) temperatures.push(temperature)
             }
+            const percentage = percentages.length ? percentages.reduce((a, b) => a + b, 0) / percentages.length / 100 : 0
+            const temperature = temperatures.length ? temperatures.reduce((a, b) => a + b, 0) / temperatures.length : 0
+            root._gpu = { type: tag, percentage: Math.max(0, Math.min(1, percentage)), temperature: temperature }
         }
     }
 
-    Process {
+    Job {
         id: sensors
-
-        command: ["sensors"]
-        environment: ({
-                LANG: "C",
-                LC_ALL: "C"
-            })
-        stdout: StdioCollector {
-            onStreamFinished: {
-                let cpuTemp = text.match(/(?:Package id [0-9]+|Tdie):\s+((\+|-)[0-9.]+)(°| )C/);
-                if (!cpuTemp)
-                    cpuTemp = text.match(/Tctl:\s+((\+|-)[0-9.]+)(°| )C/);
-
-                if (cpuTemp)
-                    root.cpuTemp = parseFloat(cpuTemp[1]);
-
-                if (root.gpuType !== "GENERIC")
-                    return;
-
-                let eligible = false;
-                let sum = 0;
-                let count = 0;
-
-                for (const line of text.trim().split("\n")) {
-                    if (line === "Adapter: PCI adapter")
-                        eligible = true;
-                    else if (line === "")
-                        eligible = false;
-                    else if (eligible) {
-                        let match = line.match(/^(temp[0-9]+|GPU core|edge)+:\s+\+([0-9]+\.[0-9]+)(°| )C/);
-                        if (!match)
-                            match = line.match(/^(junction|mem)+:\s+\+([0-9]+\.[0-9]+)(°| )C/);
-
-                        if (match) {
-                            sum += parseFloat(match[2]);
-                            count++;
-                        }
-                    }
-                }
-
-                root.gpuTemp = count > 0 ? sum / count : 0;
+        environment: Object.assign({}, Env.withProfilePath, { LANG: "C", LC_ALL: "C" })
+        timeout: 4000
+        onFinished: (tag, output, exitCode) => {
+            if (root.users <= 0) return
+            const text = exitCode === 0 ? output : ""
+            const cpu = text.match(/(?:Package id \d+|Tdie):\s*([+-]?[\d.]+)[° ]C/) ?? text.match(/Tctl:\s*([+-]?[\d.]+)[° ]C/)
+            let eligible = false
+            const temperatures = []
+            for (const line of text.split("\n")) {
+                if (/^\S/.test(line) && !line.includes(":")) eligible = line.startsWith("amdgpu-")
+                if (line.trim() === "") eligible = false
+                if (!eligible) continue
+                const match = line.match(/^(?:temp\d+|GPU core|edge|junction|mem):\s*\+?([\d.]+)[° ]C/)
+                if (match && isFinite(Number(match[1]))) temperatures.push(Number(match[1]))
+            }
+            root._temperatures = {
+                cpu: Number(cpu?.[1] ?? 0) || 0,
+                gpu: temperatures.length ? temperatures.reduce((a, b) => a + b, 0) / temperatures.length : 0
             }
         }
     }

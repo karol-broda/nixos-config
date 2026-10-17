@@ -1,441 +1,186 @@
 pragma ComponentBehavior: Bound
 
 import Quickshell
-import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import QtQuick
 import QtQuick.Effects
-
 import qs.theme
-import qs.services as Services
+import qs.services
 
 MouseArea {
     id: root
 
-    required property LazyLoader loader
+    required property var session
     required property ShellScreen screen
 
-    property int borderWidth: 2
-    property int rounding: 12
+    readonly property int borderWidth: session.borderWidth
+    readonly property int rounding: session.rounding
+    readonly property real realRounding: onClient ? rounding : 0
+    readonly property bool hideUI: session.hideChrome || (session.freeze && !frozenFrame.hasContent)
+    readonly property bool canSelect: session.phase === "selecting" && (session.owner === null || session.owner === screen) && (!session.freeze || frozenFrame.hasContent)
 
     property bool onClient: false
-
     property var selectedWindows: []
-
     property var hoveredWindow: null
+    property point dragStart: Qt.point(0, 0)
+    property bool wasMultiSelectToggle: false
+    property var _frozenClients: []
+    property rect selection: Qt.rect(screen.width / 2 - 100, screen.height / 2 - 100, 200, 200)
 
-    property real realBorderWidth: onClient ? borderWidth : 2
-    property real realRounding: onClient ? rounding : 0
+    readonly property real sx: selection.x
+    readonly property real sy: selection.y
+    readonly property real ex: selection.x + selection.width
+    readonly property real ey: selection.y + selection.height
+    property real rsx: Math.min(sx, ex) * session.progress
+    property real rsy: Math.min(sy, ey) * session.progress
+    property real sw: Math.abs(sx - ex) * session.progress + screen.width * (1 - session.progress)
+    property real sh: Math.abs(sy - ey) * session.progress + screen.height * (1 - session.progress)
 
-    property real ssx: 0
-    property real ssy: 0
-
-    property real sx: 0
-    property real sy: 0
-    property real ex: screen.width
-    property real ey: screen.height
-
-    property real rsx: Math.min(sx, ex)
-    property real rsy: Math.min(sy, ey)
-    property real sw: Math.abs(sx - ex)
-    property real sh: Math.abs(sy - ey)
-
-    property list<var> clients: {
-        var wsId = Services.Hyprland.activeWsId;
-
-        var result = [];
-        var toplevels = Services.Hyprland.toplevels;
-        if (toplevels === null || toplevels === undefined) {
-            return result;
+    readonly property var liveClients: {
+        const workspace = Hypr.monitorFor(root.screen)?.activeWorkspace
+        const result = []
+        for (const client of Hypr.toplevels?.values ?? []) {
+            if (!workspace || client?.workspace?.id !== workspace.id) continue
+            const ipc = client.lastIpcObject
+            if (!ipc?.at || !ipc?.size) continue
+            result.push({ address: client.address, ipc: {
+                at: [ipc.at[0], ipc.at[1]], size: [ipc.size[0], ipc.size[1]],
+                pinned: ipc.pinned ?? false, fullscreen: ipc.fullscreen ?? 0, floating: ipc.floating ?? false
+            } })
         }
-
-        var values = toplevels.values;
-        if (values === null || values === undefined) {
-            return result;
-        }
-
-        for (var i = 0; i < values.length; i++) {
-            var c = values[i];
-            if (c !== null && c !== undefined) {
-                var cws = c.workspace;
-                if (cws !== null && cws !== undefined && cws.id === wsId) {
-                    result.push(c);
-                }
-            }
-        }
-
-        result.sort(function(a, b) {
-            var ac = a.lastIpcObject;
-            var bc = b.lastIpcObject;
-            if (ac === null || ac === undefined) return 1;
-            if (bc === null || bc === undefined) return -1;
-
-            var pinnedDiff = (bc.pinned ? 1 : 0) - (ac.pinned ? 1 : 0);
-            if (pinnedDiff !== 0) return pinnedDiff;
-
-            var fullscreenDiff = ((bc.fullscreen !== 0) ? 1 : 0) - ((ac.fullscreen !== 0) ? 1 : 0);
-            if (fullscreenDiff !== 0) return fullscreenDiff;
-
-            var floatingDiff = (bc.floating ? 1 : 0) - (ac.floating ? 1 : 0);
-            return floatingDiff;
-        });
-
-        return result;
+        return result.sort((a, b) => Number(b.ipc.pinned) - Number(a.ipc.pinned)
+            || Number(b.ipc.fullscreen !== 0) - Number(a.ipc.fullscreen !== 0)
+            || Number(b.ipc.floating) - Number(a.ipc.floating))
+    }
+    readonly property var clients: {
+        if (!root.session.freeze) return root.liveClients
+        const addresses = (Hypr.toplevels?.values ?? []).map(client => client?.address ?? "")
+        return root._frozenClients.filter(client => addresses.includes(client.address))
     }
 
-    function checkClientRects(x: real, y: real): void {
-        hoveredWindow = null;
+    function clientRect(client: var): rect {
+        const ipc = client?.ipc
+        if (!ipc?.at || !ipc?.size) return Qt.rect(0, 0, 0, 0)
+        return Qt.rect(ipc.at[0] - root.screen.x, ipc.at[1] - root.screen.y, ipc.size[0], ipc.size[1])
+    }
 
-        for (var i = 0; i < clients.length; i++) {
-            var client = clients[i];
-            if (client === null || client === undefined) continue;
-
-            var ipc = client.lastIpcObject;
-            if (ipc === null || ipc === undefined) continue;
-
-            var at = ipc.at;
-            var size = ipc.size;
-            if (at === null || at === undefined || size === null || size === undefined) continue;
-
-            var cx = at[0] - screen.x;
-            var cy = at[1] - screen.y;
-            var cw = size[0];
-            var ch = size[1];
-
-            if (cx <= x && cy <= y && cx + cw >= x && cy + ch >= y) {
-                hoveredWindow = client;
-                onClient = true;
-
-                if (selectedWindows.length > 0) {
-                    updateSelectionFromMultiple();
-                } else {
-                    sx = cx;
-                    sy = cy;
-                    ex = cx + cw;
-                    ey = cy + ch;
-                }
-                return;
-            }
-        }
-        onClient = false;
-        hoveredWindow = null;
-
-        if (selectedWindows.length > 0) {
-            updateSelectionFromMultiple();
-            onClient = true;
-        }
+    function findClientByAddress(address: string): var {
+        return root.clients.find(client => client.address === address) ?? null
     }
 
     function updateSelectionFromMultiple(): void {
-        if (selectedWindows.length === 0) return;
-
-        var minX = 999999;
-        var minY = 999999;
-        var maxX = -999999;
-        var maxY = -999999;
-
-        for (var i = 0; i < selectedWindows.length; i++) {
-            var addr = selectedWindows[i];
-            var client = findClientByAddress(addr);
-            if (client === null || client === undefined) continue;
-
-            var ipc = client.lastIpcObject;
-            if (ipc === null || ipc === undefined) continue;
-
-            var at = ipc.at;
-            var size = ipc.size;
-            if (at === null || at === undefined || size === null || size === undefined) continue;
-
-            var cx = at[0] - screen.x;
-            var cy = at[1] - screen.y;
-            var cw = size[0];
-            var ch = size[1];
-
-            if (cx < minX) minX = cx;
-            if (cy < minY) minY = cy;
-            if (cx + cw > maxX) maxX = cx + cw;
-            if (cy + ch > maxY) maxY = cy + ch;
-        }
-
-        if (minX < 999999) {
-            sx = minX;
-            sy = minY;
-            ex = maxX;
-            ey = maxY;
-        }
+        const rects = root.selectedWindows.map(address => root.clientRect(root.findClientByAddress(address)))
+            .filter(rect => rect.width > 0 && rect.height > 0)
+        if (rects.length === 0) return
+        const x = Math.min(...rects.map(rect => rect.x))
+        const y = Math.min(...rects.map(rect => rect.y))
+        const ex = Math.max(...rects.map(rect => rect.x + rect.width))
+        const ey = Math.max(...rects.map(rect => rect.y + rect.height))
+        root.selection = Qt.rect(x, y, ex - x, ey - y)
+        root.onClient = true
     }
 
-    function findClientByAddress(addr: string): var {
-        for (var i = 0; i < clients.length; i++) {
-            var client = clients[i];
-            if (client !== null && client !== undefined && client.address === addr) {
-                return client;
-            }
-        }
-        return null;
-    }
-
-    function isWindowSelected(addr: string): bool {
-        for (var i = 0; i < selectedWindows.length; i++) {
-            if (selectedWindows[i] === addr) return true;
-        }
-        return false;
+    function checkClientRects(x: real, y: real): void {
+        if (!root.canSelect) return
+        root.hoveredWindow = root.clients.find(client => {
+            const rect = root.clientRect(client)
+            return x >= rect.x && y >= rect.y && x <= rect.x + rect.width && y <= rect.y + rect.height
+        }) ?? null
+        root.onClient = root.hoveredWindow !== null || root.selectedWindows.length > 0
+        if (root.selectedWindows.length > 0) root.updateSelectionFromMultiple()
+        else if (root.hoveredWindow !== null) root.selection = root.clientRect(root.hoveredWindow)
     }
 
     function toggleWindowSelection(client: var): void {
-        if (client === null || client === undefined) return;
+        if (!client) return
+        const address = client.address
+        root.selectedWindows = root.selectedWindows.includes(address)
+            ? root.selectedWindows.filter(value => value !== address)
+            : [...root.selectedWindows, address]
+        if (root.selectedWindows.length > 0) root.updateSelectionFromMultiple()
+        else root.checkClientRects(root.mouseX, root.mouseY)
+    }
 
-        var addr = client.address;
-        var newSelection = [];
-        var found = false;
-
-        for (var i = 0; i < selectedWindows.length; i++) {
-            if (selectedWindows[i] === addr) {
-                found = true;
-            } else {
-                newSelection.push(selectedWindows[i]);
-            }
+    onClientsChanged: {
+        const hadSelection = root.selectedWindows.length > 0
+        root.selectedWindows = root.selectedWindows.filter(address => root.findClientByAddress(address) !== null)
+        if (root.selectedWindows.length > 0) {
+            root.updateSelectionFromMultiple()
+        } else if (!root.pressed) {
+            if (hadSelection) root.selection = Qt.rect(root.screen.width / 2 - 100, root.screen.height / 2 - 100, 200, 200)
+            root.checkClientRects(root.mouseX, root.mouseY)
         }
-
-        if (!found) {
-            newSelection.push(addr);
-        }
-
-        selectedWindows = newSelection;
-        updateSelectionFromMultiple();
     }
 
     anchors.fill: parent
-    opacity: 0
+    opacity: session.progress
     hoverEnabled: true
     cursorShape: Qt.CrossCursor
+    focus: true
+    Keys.onEscapePressed: session.cancel()
 
     Component.onCompleted: {
-        if (loader.freeze) {
-            clients = clients;
+        root._frozenClients = root.liveClients.slice()
+        if (root.clients.length > 0) {
+            root.selection = root.clientRect(root.clients[0])
+            root.onClient = true
         }
+    }
 
-        opacity = 1;
-
-        if (clients.length > 0) {
-            var c = clients[0];
-            if (c !== null && c !== undefined) {
-                var ipc = c.lastIpcObject;
-                if (ipc !== null && ipc !== undefined) {
-                    var at = ipc.at;
-                    var size = ipc.size;
-                    if (at !== null && at !== undefined && size !== null && size !== undefined) {
-                        var cx = at[0] - screen.x;
-                        var cy = at[1] - screen.y;
-                        onClient = true;
-                        sx = cx;
-                        sy = cy;
-                        ex = cx + size[0];
-                        ey = cy + size[1];
-                        return;
-                    }
-                }
+    onPressed: event => {
+        if (!root.canSelect || !root.session.claim(root.screen)) {
+            event.accepted = false
+            return
+        }
+        root.dragStart = Qt.point(event.x, event.y)
+        root.wasMultiSelectToggle = false
+        root.checkClientRects(event.x, event.y)
+        if ((event.modifiers & Qt.ShiftModifier) !== 0 && root.hoveredWindow !== null) {
+            root.toggleWindowSelection(root.hoveredWindow)
+            root.wasMultiSelectToggle = true
+        } else {
+            const hadSelection = root.selectedWindows.length > 0
+            root.selectedWindows = []
+            if (!hadSelection) {
+                root.selection = root.hoveredWindow !== null
+                    ? root.clientRect(root.hoveredWindow)
+                    : Qt.rect(event.x, event.y, 0, 0)
             }
         }
-
-        sx = screen.width / 2 - 100;
-        sy = screen.height / 2 - 100;
-        ex = screen.width / 2 + 100;
-        ey = screen.height / 2 + 100;
     }
 
-    property bool wasMultiSelectToggle: false
-
-    onPressed: function(event) {
-        ssx = event.x;
-        ssy = event.y;
-        wasMultiSelectToggle = false;
-
-        if ((event.modifiers & Qt.ShiftModifier) !== 0 && hoveredWindow !== null && hoveredWindow !== undefined) {
-            toggleWindowSelection(hoveredWindow);
-            wasMultiSelectToggle = true;
-        } else if (selectedWindows.length > 0) {
-            selectedWindows = [];
+    onPositionChanged: event => {
+        if (!root.canSelect) return
+        if (root.pressed && !root.wasMultiSelectToggle) {
+            root.onClient = false
+            root.selection = Qt.rect(root.dragStart.x, root.dragStart.y, event.x - root.dragStart.x, event.y - root.dragStart.y)
+        } else {
+            root.checkClientRects(event.x, event.y)
         }
     }
-
-    property int captureX: 0
-    property int captureY: 0
-    property int captureW: 0
-    property int captureH: 0
 
     onReleased: {
-        if (closeAnim.running || captureAnim.running) {
-            return;
+        if (!root.canSelect) return
+        if (root.wasMultiSelectToggle) {
+            root.wasMultiSelectToggle = false
+            return
         }
-
-        if (wasMultiSelectToggle) {
-            wasMultiSelectToggle = false;
-            return;
-        }
-
-        captureX = screen.x + Math.ceil(rsx);
-        captureY = screen.y + Math.ceil(rsy);
-        captureW = Math.floor(sw);
-        captureH = Math.floor(sh);
-
-        captureAnim.start();
+        root.session.capture(root.screen, Qt.rect(Math.min(root.sx, root.ex), Math.min(root.sy, root.ey), Math.abs(root.ex - root.sx), Math.abs(root.ey - root.sy)))
     }
 
-    property bool hideUI: false
-
-    SequentialAnimation {
-        id: captureAnim
-
-        PropertyAction {
-            target: root
-            property: "hideUI"
-            value: true
-        }
-
-        PropertyAction {
-            target: root.loader
-            property: "closing"
-            value: true
-        }
-
-        PauseAnimation {
-            duration: 16
-        }
-
-        ScriptAction {
-            script: {
-                var cmd = "grim -l 0 -g '" + root.captureX + "," + root.captureY + " " + root.captureW + "x" + root.captureH + "' - | swappy -f -";
-                Quickshell.execDetached(["sh", "-c", cmd]);
-            }
-        }
-
-        PropertyAction {
-            target: root.loader
-            property: "activeAsync"
-            value: false
+    FrameAnimation {
+        id: captureFrames
+        running: root.session.phase === "settling" && root.session.owner === root.screen
+        onTriggered: {
+            if (currentFrame >= 3) root.session.framesReady(root.screen)
         }
     }
 
-    onPositionChanged: function(event) {
-        var x = event.x;
-        var y = event.y;
-
-        if (pressed) {
-            onClient = false;
-            sx = ssx;
-            sy = ssy;
-            ex = x;
-            ey = y;
-        } else {
-            checkClientRects(x, y);
-        }
-    }
-
-    focus: true
-    Keys.onEscapePressed: closeAnim.start()
-
-    SequentialAnimation {
-        id: closeAnim
-
-        PropertyAction {
-            target: root.loader
-            property: "closing"
-            value: true
-        }
-
-        ParallelAnimation {
-            NumberAnimation {
-                target: root
-                property: "opacity"
-                to: 0
-                duration: Motion.durationNormal
-                easing.type: Easing.OutQuart
-            }
-
-            NumberAnimation {
-                target: root
-                property: "rsx"
-                to: 0
-                duration: Motion.durationNormal
-                easing.type: Easing.OutQuart
-            }
-
-            NumberAnimation {
-                target: root
-                property: "rsy"
-                to: 0
-                duration: Motion.durationNormal
-                easing.type: Easing.OutQuart
-            }
-
-            NumberAnimation {
-                target: root
-                property: "sw"
-                to: root.screen.width
-                duration: Motion.durationNormal
-                easing.type: Easing.OutQuart
-            }
-
-            NumberAnimation {
-                target: root
-                property: "sh"
-                to: root.screen.height
-                duration: Motion.durationNormal
-                easing.type: Easing.OutQuart
-            }
-        }
-
-        PropertyAction {
-            target: root.loader
-            property: "activeAsync"
-            value: false
-        }
-    }
-
-    Connections {
-        target: Services.Hyprland
-
-        function onActiveWsIdChanged(): void {
-            root.checkClientRects(root.mouseX, root.mouseY);
-        }
-    }
-
-    Process {
-        running: true
-        command: ["hyprctl", "-j", "getoption", "general:border_size"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                var parsed = JSON.parse(text);
-                if (parsed !== null && parsed !== undefined && parsed.int !== null && parsed.int !== undefined) {
-                    root.borderWidth = parsed.int;
-                }
-            }
-        }
-    }
-
-    Process {
-        running: true
-        command: ["hyprctl", "-j", "getoption", "decoration:rounding"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                var parsed = JSON.parse(text);
-                if (parsed !== null && parsed !== undefined && parsed.int !== null && parsed.int !== undefined) {
-                    root.rounding = parsed.int;
-                }
-            }
-        }
-    }
-
-    Loader {
+    ScreencopyView {
+        id: frozenFrame
         anchors.fill: parent
-        active: root.loader.freeze
-        asynchronous: true
-
-        sourceComponent: ScreencopyView {
-            captureSource: root.screen
-        }
+        captureSource: root.session.freeze ? root.screen : null
+        live: false
     }
 
     Rectangle {
@@ -486,7 +231,7 @@ MouseArea {
             anchors.fill: parent
             anchors.margins: -3
             color: "transparent"
-            radius: root.realRounding > 0 ? root.realRounding + 3 : Spacing.radiusSm
+            radius: root.realRounding > 0 ? root.realRounding + 3 : Spacing.radiusInner
 
             border.width: 3
             border.color: Colors.withAlpha(Colors.accent, 0.9)
@@ -505,7 +250,7 @@ MouseArea {
             anchors.fill: parent
             anchors.margins: -1
             color: "transparent"
-            radius: root.realRounding > 0 ? root.realRounding + 1 : Spacing.radiusXs
+            radius: root.realRounding > 0 ? root.realRounding + 1 : Spacing.radiusNested
 
             border.width: 1
             border.color: Colors.withAlpha(Colors.textPrimary, 0.3)
@@ -514,9 +259,9 @@ MouseArea {
         Repeater {
             model: [
                 { hx: -6, hy: -6 },
-                { hx: parent.width + 6, hy: -6 },
-                { hx: -6, hy: parent.height + 6 },
-                { hx: parent.width + 6, hy: parent.height + 6 }
+                { hx: selectionBorder.width + 6, hy: -6 },
+                { hx: -6, hy: selectionBorder.height + 6 },
+                { hx: selectionBorder.width + 6, hy: selectionBorder.height + 6 }
             ]
 
             Rectangle {
@@ -554,17 +299,12 @@ MouseArea {
 
             visible: !root.hideUI
 
-            property var client: root.findClientByAddress(modelData)
-            property var ipc: client !== null && client !== undefined ? client.lastIpcObject : null
-            property real wx: ipc !== null && ipc !== undefined && ipc.at !== null && ipc.at !== undefined ? ipc.at[0] - root.screen.x : 0
-            property real wy: ipc !== null && ipc !== undefined && ipc.at !== null && ipc.at !== undefined ? ipc.at[1] - root.screen.y : 0
-            property real ww: ipc !== null && ipc !== undefined && ipc.size !== null && ipc.size !== undefined ? ipc.size[0] : 0
-            property real wh: ipc !== null && ipc !== undefined && ipc.size !== null && ipc.size !== undefined ? ipc.size[1] : 0
+            readonly property rect clientRect: root.clientRect(root.findClientByAddress(modelData))
 
-            x: wx - 2
-            y: wy - 2
-            width: ww + 4
-            height: wh + 4
+            x: clientRect.x - 2
+            y: clientRect.y - 2
+            width: clientRect.width + 4
+            height: clientRect.height + 4
             radius: root.rounding + 2
             color: "transparent"
 
@@ -600,7 +340,7 @@ MouseArea {
         y: selectionRect.y - height - 12
         width: dimensionText.width + 20
         height: 28
-        radius: Spacing.radiusMd
+        radius: Spacing.radiusFull
 
         color: Colors.withAlpha(Colors.bgElevated, 0.65)
 
@@ -643,7 +383,7 @@ MouseArea {
         anchors.bottomMargin: 24
         width: helpContent.width + 32
         height: 40
-        radius: Spacing.radiusLg
+        radius: Spacing.radiusFull
 
         color: Colors.withAlpha(Colors.bgElevated, 0.65)
 
@@ -726,15 +466,8 @@ MouseArea {
         }
     }
 
-    Behavior on opacity {
-        NumberAnimation {
-            duration: Motion.durationNormal
-            easing.type: Easing.OutQuart
-        }
-    }
-
     Behavior on rsx {
-        enabled: !root.pressed
+        enabled: !root.pressed && root.session.phase === "selecting"
 
         NumberAnimation {
             duration: Motion.durationFast
@@ -743,7 +476,7 @@ MouseArea {
     }
 
     Behavior on rsy {
-        enabled: !root.pressed
+        enabled: !root.pressed && root.session.phase === "selecting"
 
         NumberAnimation {
             duration: Motion.durationFast
@@ -752,7 +485,7 @@ MouseArea {
     }
 
     Behavior on sw {
-        enabled: !root.pressed
+        enabled: !root.pressed && root.session.phase === "selecting"
 
         NumberAnimation {
             duration: Motion.durationFast
@@ -761,7 +494,7 @@ MouseArea {
     }
 
     Behavior on sh {
-        enabled: !root.pressed
+        enabled: !root.pressed && root.session.phase === "selecting"
 
         NumberAnimation {
             duration: Motion.durationFast

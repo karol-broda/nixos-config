@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{ pkgs, ... }: {
   imports = [
     ./hardware-configuration.nix
   ];
@@ -6,7 +6,8 @@
   personal = {
     boot = {
       enable = true;
-      emulatedSystems = ["aarch64-linux"];
+      emulatedSystems = [ "aarch64-linux" ];
+      kernelPackages = pkgs.linuxPackages;
     };
 
     locale.enable = true;
@@ -97,7 +98,8 @@
       enable = true;
       extraPackages = [
         pkgs.modrinth-app
-        (pkgs.callPackage ../../pkgs/hytale-launcher {})
+        (pkgs.callPackage ../../pkgs/hytale-launcher { })
+        pkgs.kicad
       ];
     };
   };
@@ -110,4 +112,6 @@
   '';
 
   system.stateVersion = "25.05";
+
+  environment.memoryAllocator.provider = "libc";
 }

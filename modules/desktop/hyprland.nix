@@ -6,7 +6,7 @@
   pkgs-hypr,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types;
+  inherit (lib) getExe' mkIf mkEnableOption mkOption types;
   cfg = config.personal.desktop.hyprland;
 in {
   options.personal.desktop.hyprland = {
@@ -21,7 +21,7 @@ in {
 
       command = mkOption {
         type = types.str;
-        default = "${pkgs-unstable.tuigreet}/bin/tuigreet --cmd start-hyprland";
+        default = "${pkgs-unstable.tuigreet}/bin/tuigreet --cmd ${getExe' pkgs-hypr.hyprland "start-hyprland"}";
         description = "greeter command to run on the login screen";
       };
     };
@@ -77,6 +77,7 @@ in {
       greetd = {
         enable = true;
         restart = true;
+        useTextGreeter = true;
         settings = {
           default_session = {
             inherit (cfg.greeter) command;
@@ -85,18 +86,6 @@ in {
       };
 
       dbus.enable = true;
-    };
-
-    systemd.services.greetd = mkIf cfg.greeter.enable {
-      serviceConfig = {
-        Type = "idle";
-        StandardInput = "tty";
-        StandardOutput = "null";
-        StandardError = "journal";
-        TTYReset = true;
-        TTYVHangup = true;
-        TTYVTDisallocate = true;
-      };
     };
 
     security.polkit.enable = cfg.polkit;

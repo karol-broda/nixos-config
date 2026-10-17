@@ -21,25 +21,28 @@ Singleton {
     readonly property int glowDuration: 300
     readonly property int dotDuration: 400
 
-    // bezier curves (format: [x1, y1, x2, y2, 1, 1])
-    // smooth ease-out for enters
     readonly property var curveEnter: [0.0, 0.0, 0.2, 1.0, 1, 1]
 
-    // faster exit
     readonly property var curveExit: [0.15, 0.4, 0.15, 1.0, 1, 1]
 
-    // glide: slow deceleration
     readonly property var curveGlide: [0.23, 1.0, 0.32, 1.0, 1, 1]
 
-    // slide for panels
     readonly property var curveSlide: [0.25, 0.1, 0.1, 1.0, 1, 1]
 
-    // spring with overshoot
     readonly property var curveSpring: [0.34, 1.56, 0.64, 1.0, 1, 1]
 
-    // smooth general purpose
     readonly property var curveSmooth: [0.4, 0.0, 0.2, 1.0, 1, 1]
 
     readonly property int staggerDelay: 50
     readonly property int contentDelay: 70
+
+
+    readonly property real surfaceSpring: 4.2
+    readonly property real surfaceDamping: 0.34
+    readonly property real surfaceMass: 1.0
+    readonly property real progressEpsilon: 0.002
+
+    readonly property real resizeSpring: 4.6
+    readonly property real resizeDamping: 0.38
+    readonly property real pixelEpsilon: 0.25
 }

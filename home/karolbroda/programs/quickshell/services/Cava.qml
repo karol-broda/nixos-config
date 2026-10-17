@@ -8,55 +8,41 @@ Singleton {
     id: root
 
     readonly property int barCount: 32
-    property list<real> values: Array(barCount).fill(0)
-    property int refCount: 0
+    readonly property list<real> values: _values
+    property int users: 0
 
     readonly property real smoothing: 0.35
 
-    function buildConfig() {
-        const lines = [
-            "[general]",
-            "framerate=60",
-            "bars=" + root.barCount,
-            "sleep_timer=3",
-            "sensitivity=200",
-            "",
-            "[output]",
-            "channels=mono",
-            "method=raw",
-            "raw_target=/dev/stdout",
-            "data_format=ascii",
-            "ascii_max_range=100",
-        ];
-        return lines.join("\\n");
-    }
+    property list<real> _values: Array(barCount).fill(0)
+
+    readonly property string _config: [
+        "[general]",
+        "framerate=60",
+        "bars=" + barCount,
+        "sleep_timer=3",
+        "sensitivity=200",
+        "[output]",
+        "channels=mono",
+        "method=raw",
+        "raw_target=/dev/stdout",
+        "data_format=ascii",
+        "ascii_max_range=100"
+    ].join("\n")
 
     Process {
-        id: cavaProc
+        id: proc
 
-        running: root.refCount > 0
-        command: [
-            "sh", "-c",
-            "printf '" + root.buildConfig() + "' | cava -p /dev/stdin"
-        ]
+        running: root.users > 0
+        command: ["sh", "-c", "printf '%s' \"$1\" | exec cava -p /dev/stdin", "cava", root._config]
+
+        onRunningChanged: if (!running) root._values = Array(root.barCount).fill(0)
 
         stdout: SplitParser {
-            onRead: data => {
-                if (root.refCount <= 0) return;
-
-                const parsed = data.slice(0, -1).split(";").map(v => parseInt(v, 10));
-                if (parsed.length === 0) return;
-
-                const prev = root.values;
-                const smoothed = [];
-                const k = root.smoothing;
-
-                for (let i = 0; i < parsed.length; i++) {
-                    const old = i < prev.length ? prev[i] : 0;
-                    smoothed.push(old * k + parsed[i] * (1.0 - k));
-                }
-
-                root.values = smoothed;
+            onRead: line => {
+                const parsed = line.split(";").filter(v => v !== "").map(v => parseInt(v, 10))
+                if (parsed.length !== root.barCount || parsed.some(isNaN)) return
+                const k = root.smoothing
+                root._values = parsed.map((v, i) => root._values[i] * k + v * (1 - k))
             }
         }
     }

@@ -1,5 +1,6 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
-import QtQuick.Layouts
 import QtQuick.Effects
 import qs.theme
 import qs.services
@@ -9,27 +10,21 @@ Item {
     implicitWidth: 900
     implicitHeight: 600
 
-    required property var context
+    required property LockContext context
 
     readonly property string currentTime: Time.format("HH:mm")
     readonly property string currentDate: Time.format("dddd, MMMM d")
 
-    property real shaderTime: 0
-
-    Timer {
-        interval: 16
-        running: true
-        repeat: true
-        onTriggered: {
-            root.shaderTime += 0.016
-        }
+    FrameAnimation {
+        id: shaderClock
+        running: root.visible
     }
 
     ShaderEffect {
         id: noiseShader
         anchors.fill: parent
 
-        property real time: root.shaderTime
+        property real time: shaderClock.elapsedTime
         property color color1: Colors.base
         property color color2: Colors.mauve
         property color color3: Colors.flamingo
@@ -71,9 +66,24 @@ Item {
             spacing: 8
             height: 4
 
-            Rectangle { width: 20; height: 1; color: Colors.withAlpha(Colors.lavender, 0.4); anchors.verticalCenter: parent.verticalCenter }
-            Rectangle { width: 4; height: 4; radius: 2; color: Colors.withAlpha(Colors.rosewater, 0.6) }
-            Rectangle { width: 20; height: 1; color: Colors.withAlpha(Colors.lavender, 0.4); anchors.verticalCenter: parent.verticalCenter }
+            Rectangle {
+                width: 20
+                height: 1
+                color: Colors.withAlpha(Colors.lavender, 0.4)
+                anchors.verticalCenter: parent.verticalCenter
+            }
+            Rectangle {
+                width: 4
+                height: 4
+                radius: 2
+                color: Colors.withAlpha(Colors.rosewater, 0.6)
+            }
+            Rectangle {
+                width: 20
+                height: 1
+                color: Colors.withAlpha(Colors.lavender, 0.4)
+                anchors.verticalCenter: parent.verticalCenter
+            }
         }
 
         Text {
@@ -103,20 +113,20 @@ Item {
                 width: 1
                 height: 1
                 opacity: 0
-                echoMode: TextInput.Normal
+                echoMode: TextInput.Password
+                passwordMaskDelay: 0
+                selectByMouse: false
+                persistentSelection: false
+                readOnly: root.context.isAuthenticating
                 focus: true
 
-                text: root.context !== null ? root.context.password : ""
-                onTextChanged: {
-                    if (root.context !== null) {
-                        root.context.password = text
-                    }
-                }
-
-                onAccepted: {
-                    if (root.context !== null) {
-                        root.context.submitPassword()
-                    }
+                text: root.context.password
+                onTextEdited: root.context.setPassword(text)
+                onAccepted: root.context.submitPassword()
+                Keys.onPressed: event => {
+                    const selecting = (event.modifiers & Qt.ShiftModifier) !== 0 && [Qt.Key_Left, Qt.Key_Right, Qt.Key_Up, Qt.Key_Down, Qt.Key_Home, Qt.Key_End, Qt.Key_PageUp, Qt.Key_PageDown].includes(event.key)
+                    if (event.matches(StandardKey.Copy) || event.matches(StandardKey.Cut) || event.matches(StandardKey.SelectAll) || selecting)
+                        event.accepted = true
                 }
             }
 
@@ -145,18 +155,30 @@ Item {
                         scale: active ? 1.0 : 0.5
 
                         Behavior on scale {
-                            NumberAnimation { duration: 180; easing.type: Easing.OutBack }
+                            NumberAnimation {
+                                duration: 180
+                                easing.type: Easing.OutBack
+                            }
                         }
                         Behavior on opacity {
-                            NumberAnimation { duration: 120 }
+                            NumberAnimation {
+                                duration: 120
+                            }
                         }
 
-                        // pulse the newest dot
                         SequentialAnimation on scale {
                             id: pulseAnim
                             running: false
-                            NumberAnimation { to: 1.6; duration: 100; easing.type: Easing.OutQuad }
-                            NumberAnimation { to: 1.0; duration: 200; easing.type: Easing.OutElastic }
+                            NumberAnimation {
+                                to: 1.6
+                                duration: 100
+                                easing.type: Easing.OutQuad
+                            }
+                            NumberAnimation {
+                                to: 1.0
+                                duration: 200
+                                easing.type: Easing.OutElastic
+                            }
                         }
 
                         onActiveChanged: {
@@ -186,14 +208,23 @@ Item {
                 width: passwordInput.activeFocus ? parent.width * 0.5 : parent.width * 0.3
                 height: 1
                 color: {
-                    if (root.context !== null && root.context.authFailed) {
+                    if (root.context.authFailed) {
                         return Colors.red
                     }
                     return Colors.withAlpha(Colors.lavender, passwordInput.activeFocus ? 0.5 : 0.2)
                 }
 
-                Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutQuad } }
-                Behavior on color { ColorAnimation { duration: 250 } }
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 300
+                        easing.type: Easing.OutQuad
+                    }
+                }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 250
+                    }
+                }
             }
         }
 
@@ -207,23 +238,27 @@ Item {
             opacity: 0.6
 
             text: {
-                if (root.context !== null && root.context.authFailed) {
+                if (root.context.authFailed) {
                     return "incorrect"
                 }
-                if (root.context !== null && root.context.isAuthenticating) {
+                if (root.context.isAuthenticating) {
                     return "..."
                 }
                 return "↵"
             }
 
             color: {
-                if (root.context !== null && root.context.authFailed) {
+                if (root.context.authFailed) {
                     return Colors.red
                 }
                 return Colors.overlay1
             }
 
-            Behavior on color { ColorAnimation { duration: 200 } }
+            Behavior on color {
+                ColorAnimation {
+                    duration: 200
+                }
+            }
         }
     }
 }

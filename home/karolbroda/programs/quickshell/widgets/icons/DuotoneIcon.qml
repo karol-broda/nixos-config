@@ -7,7 +7,7 @@ Item {
 
     property string name: ""
     property int size: Spacing.iconMd
-    property string iconState: "default"  // default, hover, active, disabled
+    property string iconState: "default"
 
     property color color: {
         switch (iconState) {
@@ -35,7 +35,7 @@ Item {
         visible: false
 
         source: {
-            if (root.name === null || root.name === undefined || root.name === "") {
+            if (root.name === "") {
                 return ""
             }
             const basePath = Qt.resolvedUrl("../../assets/phosphor-icons/duotone")
@@ -64,7 +64,7 @@ Item {
         visible: false
 
         source: {
-            if (root.name === null || root.name === undefined || root.name === "") {
+            if (root.name === "") {
                 return ""
             }
             const basePath = Qt.resolvedUrl("../../assets/phosphor-icons/regular")
@@ -85,7 +85,7 @@ Item {
         anchors.centerIn: parent
         width: root.size * 0.7
         height: root.size * 0.7
-        radius: Spacing.radiusSm
+        radius: Spacing.radiusNested
         color: "transparent"
         border.width: 1
         border.color: Colors.textDim

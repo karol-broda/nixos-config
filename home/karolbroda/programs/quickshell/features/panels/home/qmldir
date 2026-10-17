@@ -1,6 +1,6 @@
 module qs.features.panels.home
 
 HomePanel 1.0 HomePanel.qml
-HomeState 1.0 HomeState.qml
+MenuList 1.0 MenuList.qml
 TrayFlyout 1.0 TrayFlyout.qml
-TraySubMenu 1.0 TraySubMenu.qml
+TrayMenuStack 1.0 TrayMenuStack.qml

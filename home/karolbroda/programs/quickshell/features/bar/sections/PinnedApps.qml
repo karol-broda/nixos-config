@@ -1,9 +1,10 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
-import Quickshell
-import Quickshell.Io
 import qs.theme
 import qs.config
+import qs.services
 import qs.widgets.icons
 
 RowLayout {
@@ -15,17 +16,16 @@ RowLayout {
         model: Config.pinnedApps
 
         Item {
-            id: appItem
+            id: app
 
             required property var modelData
-            required property int index
 
             Layout.preferredWidth: Spacing.barHeight - 4
             Layout.preferredHeight: Spacing.barHeight - 4
 
             Rectangle {
                 anchors.fill: parent
-                radius: Spacing.radiusSm
+                radius: Spacing.radiusInner
                 color: mouseArea.containsMouse ? Colors.bgHover : "transparent"
 
                 Behavior on color {
@@ -35,7 +35,7 @@ RowLayout {
 
             AppIcon {
                 anchors.centerIn: parent
-                appId: appItem.modelData.appId
+                appId: app.modelData.appId
                 size: Spacing.iconMd
             }
 
@@ -44,15 +44,7 @@ RowLayout {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-
-                onClicked: {
-                    launchProc.command = [appItem.modelData.exec]
-                    launchProc.running = true
-                }
-            }
-
-            Process {
-                id: launchProc
+                onClicked: Env.launch([app.modelData.exec])
             }
         }
     }

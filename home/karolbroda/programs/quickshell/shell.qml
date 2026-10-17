@@ -2,83 +2,53 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
-import Quickshell.Wayland
 
-import qs.core
-import qs.services
+import qs.state
 import qs.features.lockscreen
 import qs.features.screenshot
 
 ShellRoot {
     id: root
 
-    Process {
-        id: devModeCheck
-        command: ["sh", "-c", "test -z \"$INVOCATION_ID\" && echo dev"]
-
-        stdout: SplitParser {
-            onRead: function(data) {
-                console.log("devModeCheck:", data.trim())
-                if (data.trim() === "dev") {
-                    Quickshell.watchFiles = true
-                }
-            }
-        }
-    }
-
-    Component.onCompleted: {
-        // nix symlinks to the store cause spurious inotify events,
-        // so disable file watching by default and only enable it
-        // when running outside of a systemd service (i.e. development)
-        Quickshell.watchFiles = false
-        devModeCheck.running = true
-        console.log("Shell loaded")
-    }
+    Component.onCompleted: Quickshell.watchFiles = !Quickshell.env("INVOCATION_ID")
 
     GlobalShortcut {
         name: "launcher"
         description: "Open application launcher"
+        onPressed: Shell.togglePanel("launcher")
+    }
 
-        onPressed: {
-            Dispatcher.dispatch(Actions.togglePanel("launcher"))
-        }
+    GlobalShortcut {
+        name: "dashboard"
+        description: "Toggle the dashboard"
+        onPressed: Shell.togglePanel("dashboard")
     }
 
     GlobalShortcut {
         name: "lock"
         description: "Lock the session"
+        onPressed: Shell.lock()
+    }
 
-        onPressed: {
-            lock.locked = true
+    IpcHandler {
+        target: "shell"
+
+        function togglePanel(name: string): void {
+            Shell.togglePanel(name)
+        }
+
+        function closePanel(): void {
+            Shell.closePanel()
+        }
+
+        function lock(): void {
+            Shell.lock()
         }
     }
 
-    Connections {
-        target: Dispatcher
-
-        function onLockRequested() {
-            lock.locked = true
-        }
-    }
-
-    LockContext {
-        id: lockContext
-
-        onUnlocked: {
-            lock.locked = false
-            lockContext.clearPassword()
-        }
-    }
-
-    WlSessionLock {
-        id: lock
-
-        WlSessionLockSurface {
-            LockSurface {
-                anchors.fill: parent
-                context: lockContext
-            }
-        }
+    LockScreen {
+        locked: Shell.locked
+        onUnlocked: Shell.unlock()
     }
 
     ScreenshotOverlay {}
@@ -87,7 +57,7 @@ ShellRoot {
         model: Quickshell.screens
 
         ScreenLayout {
-            property var modelData
+            required property ShellScreen modelData
             screen: modelData
         }
     }

@@ -1,44 +1,28 @@
 pragma Singleton
 
 import Quickshell
-import Quickshell.Io
 import Quickshell.Services.Mpris
 
 Singleton {
     id: root
 
     readonly property list<MprisPlayer> list: Mpris.players.values
-    readonly property MprisPlayer active: manualActive ?? list.find(p => p.identity === "Spotify") ?? list[0] ?? null
-    property MprisPlayer manualActive
+    readonly property MprisPlayer active: list.find(p => p.identity === "Spotify") ?? list[0] ?? null
+    readonly property bool hasPlayer: active !== null
+    readonly property bool isPlaying: active?.isPlaying ?? false
+    readonly property string title: active?.trackTitle ?? ""
+    readonly property string artist: active?.trackArtist ?? ""
+    readonly property string artUrl: active?.trackArtUrl ?? ""
 
-    readonly property bool hasPlayer: active !== null && active !== undefined
-    readonly property bool isPlaying: hasPlayer && active.isPlaying === true
-
-    function togglePlaying() {
-        var player = root.active;
-        if (player !== null && player !== undefined && player.canTogglePlaying) {
-            player.togglePlaying();
-        }
+    function togglePlaying(): void {
+        if (root.active?.canTogglePlaying) root.active.togglePlaying()
     }
 
-    function previous() {
-        var player = root.active;
-        if (player !== null && player !== undefined && player.canGoPrevious) {
-            player.previous();
-        }
+    function next(): void {
+        if (root.active?.canGoNext) root.active.next()
     }
 
-    function next() {
-        var player = root.active;
-        if (player !== null && player !== undefined && player.canGoNext) {
-            player.next();
-        }
-    }
-
-    function stop() {
-        var player = root.active;
-        if (player !== null && player !== undefined) {
-            player.stop();
-        }
+    function previous(): void {
+        if (root.active?.canGoPrevious) root.active.previous()
     }
 }
